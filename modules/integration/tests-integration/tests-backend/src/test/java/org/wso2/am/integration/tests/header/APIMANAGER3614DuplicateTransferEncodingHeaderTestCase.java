@@ -53,17 +53,7 @@ public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase extends APIMI
                                                      session);
 
         int port = 9785;
-        String expectedResponse = "HTTP/1.0 200 OK\r\nServer: testServer\r\n" +
-                                  "Content-Type: text/html\r\n" +
-                                  "Transfer-Encoding: chunked\r\n" +
-                                  "Transfer-Encoding: chunked\r\n" +
-                                  "\r\n" + "<HTML>\n" + "<!DOCTYPE HTML PUBLIC " +
-                                  "\"-//W3C//DTD HTML 4.0 Transitional//EN\">\n" +
-                                  "<HEAD>\n" + " <TITLE>Test Server Results</TITLE>\n" +
-                                  "</HEAD>\n" + "\n" + "<BODY BGCOLOR=\"#FDF5E6\">\n" +
-                                  "<H1 ALIGN=\"CENTER\"> Results</H1>\n" +
-                                  "Here is the request line and request headers\n" +
-                                  "sent by your browser:\n" + "<PRE>\r\n0\r\n";
+        String expectedResponse = generateChunkedResponse("correct chunked payload");
         simpleSocketServer = new SimpleSocketServer(port, expectedResponse);
         simpleSocketServer.start();
         Thread.sleep(10000);
@@ -84,4 +74,20 @@ public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase extends APIMI
         simpleSocketServer.shutdown();
         super.cleanUp();
     }
+
+    public static String generateChunkedResponse(String response) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("HTTP/1.1 200 OK\r\n");
+        sb.append("Content-Type: text/html\r\n");
+        sb.append("Transfer-Encoding: chunked\r\n");
+        sb.append("Transfer-Encoding: chunked\r\n");
+        sb.append("\r\n");
+        sb.append(Integer.toHexString(response.length()) + "\r\n");
+        sb.append(response + "\r\n");
+        sb.append("0\r\n");
+        sb.append("\r\n");
+        return sb.toString();
+    }
+
 }
