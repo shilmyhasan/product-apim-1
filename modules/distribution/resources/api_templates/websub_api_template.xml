@@ -57,7 +57,7 @@
                                                             <duration>60000</duration>
                                                         </timeout>
                                                         <markForSuspension>
-                                                            <errorCodes>101504, 101505, 101500</errorCodes>
+                                                            <errorCodes>-1</errorCodes>
                                                             <retriesBeforeSuspension>3</retriesBeforeSuspension>
                                                             <retryDelay>1</retryDelay>
                                                         </markForSuspension>
@@ -90,7 +90,7 @@
     </resource>
     <resource methods="POST" url-mapping="/*" binds-to="default">
         <inSequence>
-            <filter source="fn:lower-case($axis2:ContentType)" regex="application/x-www-form-urlencoded">
+            <filter source="fn:contains(fn:lower-case($trp:Content-Type), 'application/x-www-form-urlencoded')" regex="true">
                 <then>
                     <property name="FORCE_SC_ACCEPTED" value="true" scope="axis2"/>
                     <property name="SUBSCRIBER_MODE" expression="//xformValues//hub.mode"/>
@@ -126,13 +126,12 @@
 
                     #if($enableSubscriberVerification)
                     <property name="ECHO_CHALLENGE" expression="json-eval($.text)"/>
-                    <property name="subscriberVerified"
-                              expression="get-property('HUB_CHALLENGE') = get-property('ECHO_CHALLENGE')"/>
-                    <filter source="get-property('subscriberVerified')" regex="true">
+                    <filter source="get-property('HUB_CHALLENGE') = get-property('ECHO_CHALLENGE')" regex="true">
                         <then>
+                            <log level="custom">
+                                <property name="SUBSCRIBER VERIFICATION STATUS" expression="fn:concat('Passed. ', $ctx:SUBSCRIBER_CALLBACK, ' successfully verified the challenge')"/>
+                            </log>
                     #end
-                            <property name="ContentType" scope="axis2" action="SET"
-                                      value="application/x-www-form-urlencoded"/>
                             <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
                             <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
                                 <then>
@@ -145,7 +144,7 @@
                         </then>
                         <else>
                             <log level="custom">
-                                <property name="SUBSCRIBER VERIFICATION" value="FAILED"/>
+                                <property name="SUBSCRIBER VERIFICATION STATUS" expression="fn:concat('Failed. ', $ctx:SUBSCRIBER_CALLBACK, ' failed to verify the challenge')"/>
                             </log>
                         </else>
                     </filter>
