@@ -93,10 +93,6 @@
             <filter source="fn:lower-case($axis2:ContentType)" regex="application/x-www-form-urlencoded">
                 <then>
                     <property name="FORCE_SC_ACCEPTED" value="true" scope="axis2"/>
-                    <enrich>
-                        <source clone="false" type="body"/>
-                        <target action="replace" type="property" property="ORIGINAL_SUBSCRIPTION_PAYLOAD"/>
-                    </enrich>
                     <property name="SUBSCRIBER_MODE" expression="//xformValues//hub.mode"/>
                     <property name="SUBSCRIBER_TOPIC" expression="//xformValues//hub.topic"/>
                     <property name="SUBSCRIBER_CALLBACK" expression="//xformValues//hub.callback"/>
@@ -137,10 +133,6 @@
                     #end
                             <property name="ContentType" scope="axis2" action="SET"
                                       value="application/x-www-form-urlencoded"/>
-                            <enrich>
-                                <source clone="false" type="property" property="ORIGINAL_SUBSCRIPTION_PAYLOAD"/>
-                                <target action="replace" type="body"/>
-                            </enrich>
                             <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
                             <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
                                 <then>
