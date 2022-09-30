@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.tests.streamingapis.websub;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
@@ -267,7 +269,10 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
         String url = webSubApiUrl + "?hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" +
                 hubSecret + "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
-        HttpRequestUtil.doPost(new URL(url), "", Collections.singletonMap("Authorization", "Bearer " + bearerToken));
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + bearerToken);
+        headers.put("Content-Type", "application/json");
+        HttpRequestUtil.doPost(new URL(url), "", headers);
     }
 
     @AfterClass(alwaysRun = true)
