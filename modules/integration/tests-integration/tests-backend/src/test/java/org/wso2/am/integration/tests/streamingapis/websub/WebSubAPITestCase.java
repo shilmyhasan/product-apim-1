@@ -238,6 +238,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testInvokeWebSubApi")
     public void testInvokeWebSubApiWithQueryParameters() throws Exception {
 
+        callbackServerServlet.setCallbacksReceived(0);
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
         handleCallbackSubscriptionWithQueryParameters(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
                 accessToken);
@@ -250,20 +251,18 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         }
         handleCallbackSubscriptionWithQueryParameters(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
                 accessToken);
-
+        Thread.sleep(5000);
         int sent = webhookSender.getWebhooksSent();
         int received = callbackServerServlet.getCallbacksReceived();
         Assert.assertEquals(sent, noOfEventsToSend);
         Assert.assertEquals(sent + 1, received); // no. of events received = no. of events sent + 1 subscribe event
-
-        callbackServerServlet.setCallbacksReceived(0);
-        webhookSender.setWebhooksSent(0);
     }
 
     @Test(description = "Test invoke WebSub API when parameters are passed as form url encoded data",
             dependsOnMethods = "testInvokeWebSubApi")
     public void testInvokeWebSubAPIWithFormUrlEncodedData() throws Exception {
 
+        callbackServerServlet.setCallbacksReceived(0);
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
         HttpResponse subResponse = handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl,
                                                                                 DEFAULT_TOPIC, topicSecret, "50000000",
@@ -280,20 +279,20 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         HttpResponse unSubResponse = handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl,
                                                                                   DEFAULT_TOPIC, topicSecret,
                                                                                   "50000000", accessToken);
+        Thread.sleep(5000);
         Assert.assertEquals(HttpServletResponse.SC_ACCEPTED, unSubResponse.getResponseCode(),
                             "Unsubscribe request failed with a " + unSubResponse.getResponseCode() + " response");
         int sent = webhookSender.getWebhooksSent();
         int received = callbackServerServlet.getCallbacksReceived();
         Assert.assertEquals(sent, noOfEventsToSend, "Webhook sender failed to send all the requests");
         Assert.assertEquals(sent, received, "Callback server did not receive all the content distribution requests");
-        callbackServerServlet.setCallbacksReceived(0);
-        webhookSender.setWebhooksSent(0);
     }
 
     @Test(description = "Check availability of mandatory parameters",
             dependsOnMethods = "testInvokeWebSubApi")
     public void testMandatoryParameters() throws Exception {
 
+        callbackServerServlet.setCallbacksReceived(0);
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
         handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
                                                      "50000000", accessToken);
@@ -313,8 +312,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
                           "Missing link header in content distribution request");
         handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
                                                      "50000000", accessToken);
-        callbackServerServlet.setCallbacksReceived(0);
-        webhookSender.setWebhooksSent(0);
+        Thread.sleep(5000);
     }
 
     @Test(description = "Check subscription when mandatory parameters are missing",
@@ -325,6 +323,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         try {
             handleCallbackSubscriptionWithFormUrlEncoded("", apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
                                                          "50000000", accessToken);
+            Thread.sleep(5000);
             Assert.fail("WebSub subscription invoked without mandatory parameters.");
         } catch (AutomationFrameworkException e) {
             assertTrue(e.getMessage().contains("Server returned HTTP response code: 500"));
@@ -347,6 +346,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
+        callbackServerServlet.setCallbacksReceived(0);
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverWithSubVerificationPort + "/receiver";
         handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
                                                      "50000000", accessToken);
@@ -359,12 +359,11 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         }
         handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
                                                      "50000000", accessToken);
+        Thread.sleep(5000);
         int sent = webhookSender.getWebhooksSent();
         int received = callbackServerServletWithSubVerification.getCallbacksReceived();
         Assert.assertEquals(sent, noOfEventsToSend, "Webhook sender failed to send all the requests");
         Assert.assertEquals(sent, received, "Callback server did not receive all the content distribution requests");
-        callbackServerServletWithSubVerification.setCallbacksReceived(0);
-        webhookSender.setWebhooksSent(0);
     }
 
     private void initializeCallbackReceiver(int port) {
@@ -413,6 +412,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         String payloadUrl = apiEndpoint.replaceAll(":([0-9]+)/", ":" + TOPIC_PORT + "/") +
                 "/webhooks_events_receiver_resource?topic=" + DEFAULT_TOPIC;
         webhookSender = new WebhookSender(payloadUrl, secret);
+        webhookSender.setWebhooksSent(0);
     }
 
     private static void handleCallbackSubscriptionWithQueryParameters(String hubMode, String webSubApiUrl,
