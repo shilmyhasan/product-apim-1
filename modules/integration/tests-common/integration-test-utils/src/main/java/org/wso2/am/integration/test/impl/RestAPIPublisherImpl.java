@@ -49,6 +49,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualA
 import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
@@ -91,6 +92,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyListDT
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
@@ -162,6 +164,7 @@ public class RestAPIPublisherImpl {
     private String disableVerification = System.getProperty("disableVerification");
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
+    public SettingsApi settingsApi = new SettingsApi();
 
 
     @Deprecated
@@ -212,6 +215,7 @@ public class RestAPIPublisherImpl {
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         sharedScopesApi.setApiClient(apiPublisherClient);
+        settingsApi.setApiClient(apiPublisherClient);
         operationPoliciesApi.setApiClient(apiPublisherClient);
         apisOperationPoliciesApi.setApiClient(apiPublisherClient);
         endpointCertificatesApi.setApiClient(apiPublisherClient);
@@ -1152,6 +1156,11 @@ public class RestAPIPublisherImpl {
                 null);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
+    }
+
+    public ApiResponse<APIDTO> importOASDefinitionResponse(File file, String properties) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties, null);
+        return apiDtoApiResponse;
     }
 
     public GraphQLValidationResponseDTO validateGraphqlSchemaDefinition(File schemaDefinition) throws ApiException {
@@ -2512,6 +2521,11 @@ public class RestAPIPublisherImpl {
                 }
             }
         }
+
+    }
+
+    public SettingsDTO getSettings() throws ApiException {
+        return settingsApi.getSettings();
 
     }
 }
