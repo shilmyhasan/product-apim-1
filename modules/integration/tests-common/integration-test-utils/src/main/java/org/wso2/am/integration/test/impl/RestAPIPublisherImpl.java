@@ -2526,6 +2526,5 @@ public class RestAPIPublisherImpl {
 
     public SettingsDTO getSettings() throws ApiException {
         return settingsApi.getSettings();
-
     }
 }
