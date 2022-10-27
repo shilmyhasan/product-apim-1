@@ -85,7 +85,6 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
     private final String API_CONTEXT = "info";
     private final String GRAPHQL_API_NAME = "ConfigurableDefaultPolicyTestCaseGraphql";
     private final String END_POINT_URL = "https://localhost:9943/am-graphQL-sample/api/graphql/";
-    private final String TENANT_CONFIG_LOCATION = "/_system/config/apimgt/applicationdata/tenant-conf.json";
     private AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO;
     private String providerName;
     private String schemaDefinition;
@@ -131,9 +130,9 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
         subscriptionThrottlePolicyDTO.setPolicyName("DefaultSubscriptionLevelTier");
         subscriptionThrottlePolicyDTO.setDefaultLimit(defaultLimit);
-        subscriptionThrottlePolicyDTO.setRateLimitCount(0);
+        subscriptionThrottlePolicyDTO.setRateLimitCount(10);
         subscriptionThrottlePolicyDTO.setRateLimitTimeUnit("sec");
-        subscriptionThrottlePolicyDTO.setSubscriberCount(0);
+        subscriptionThrottlePolicyDTO.setSubscriberCount(10);
         subscriptionThrottlePolicyDTO.setBillingPlan("FREE");
         ApiResponse<SubscriptionThrottlePolicyDTO> subscriptionThrottlePolicyDTOApiResponse =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO);
@@ -152,13 +151,12 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
         resourceAdminServiceClient =
                 new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                         createSession(gatewayContextMgt));
-        tenantConfigBeforeTestCase = resourceAdminServiceClient.getTextContent(TENANT_CONFIG_LOCATION);
-        org.json.simple.JSONObject tenantConfigJson =
-                (org.json.simple.JSONObject) new JSONParser().parse(tenantConfigBeforeTestCase);
+        tenantConfigBeforeTestCase = restAPIAdmin.getTenantConfig();
+        org.json.simple.JSONObject tenantConfigJson = (org.json.simple.JSONObject) new JSONParser().parse(tenantConfigBeforeTestCase);
         tenantConfigJson.put("DefaultAPILevelTier", "DefaultAPIPolicy");
         tenantConfigJson.put("DefaultApplicationLevelTier", "DefaultApplicationLevelTier");
         tenantConfigJson.put("DefaultSubscriptionLevelTier", "DefaultSubscriptionLevelTier");
-        resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfigJson.toJSONString());
+        restAPIAdmin.updateTenantConfig(tenantConfigJson);
         userManagementClient.addUser("tenantConfigured", "tenantConfigured", subscriberRole, "default");
         try {
             restAPIAdmin.deleteAdvancedThrottlingPolicy(this.advancedThrottlePolicyDTO.getPolicyId());
@@ -224,7 +222,6 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
         Assert.assertTrue(operationsList.get(0).getThrottlingPolicy().equalsIgnoreCase("DefaultAPIPolicy"),
                 "Throttling policy " + operationsList.get(0).getThrottlingPolicy() + " is applied");
-
     }
 
     @Test(groups = {"wso2.am"}, description = "Create a REST API without x-throttling tier and check if " +
@@ -232,10 +229,11 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
     public void createAPIwithThrottlingTierNull() throws Exception {
         //create a REST API
         String swaggerPath = getAMResourceLocation() + File.separator + "configFiles" + File.separator + "unlimitedTier"
-                + File.separator + "TestAPI.yaml";
+                + File.separator + "TestAPI.json";
         File definition = new File(swaggerPath);
+
         JSONObject endpoints = new JSONObject();
-        endpoints.put("url", "test");
+        endpoints.put("url", "http://testapi.com");
 
         JSONObject endpointConfig = new JSONObject();
         endpointConfig.put("endpoint_type", "http");
@@ -247,15 +245,16 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
         tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
 
         JSONObject apiProperties = new JSONObject();
-        apiProperties.put("name", "testAPIWithTenantConfigured");
-        apiProperties.put("context", "/testAPIWithTenantConfigured");
+        apiProperties.put("name", "TestAPI");
+        apiProperties.put("context", "/TestAPI");
         apiProperties.put("version", "1.0.0");
         apiProperties.put("provider", providerName);
-        apiProperties.put("endpointConfig", endpointConfig);
         apiProperties.put("policies", tierList);
+        apiProperties.put("endpointConfig", endpointConfig);
         APIDTO restAPIDTO = restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
         restAPIId = restAPIDTO.getId();
-        restAPIPublisher.changeAPILifeCycleStatus(restAPIId, Constants.PUBLISHED);
+
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(restAPIId, false);
         APIDTO retrievedDto = restAPIPublisher.getAPIByID(restAPIId);
         Assert.assertNotNull(retrievedDto);
         Assert.assertNotNull(retrievedDto.getOperations());
@@ -271,7 +270,7 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
             restAPIPublisher.updateAPI(retrievedDto, restAPIId);
             Assert.fail("API Update Successful with Unlimited Subscription Policy.");
         } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), 400);
+            Assert.assertEquals(e.getCode(), 500);
             Assert.assertTrue(e.getResponseBody().contains("Unlimited"));
         }
     }
@@ -317,7 +316,8 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfigBeforeTestCase);
+        org.json.simple.JSONObject tenantConfigBeforeTestCaseJson = (org.json.simple.JSONObject) new JSONParser().parse(tenantConfigBeforeTestCase);
+        restAPIAdmin.updateTenantConfig(tenantConfigBeforeTestCaseJson);
         restAPIPublisher.deleteAPI(restAPIId);
         restAPIPublisher.deleteAPI(graphqlAPIId);
         restAPIAdmin.deleteAdvancedThrottlingPolicy(advancedThrottlePolicyDTO.getPolicyId());
