@@ -5382,7 +5382,6 @@ paths:
             - apim:api_view
             - apim:api_publish
             - apim:api_manage
-            - apim:api_product_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -8776,12 +8775,6 @@ components:
           type: string
           example:
             wso2
-        gatewayType:
-          title: Field to identify gateway type.
-          type: string
-          description: The gateway type selected for the API policies. Accepts one of the
-            following. wso2/synapse, wso2/choreo-connect.
-          example: wso2/synapse
         asyncTransportProtocols:
           type: array
           description: |
@@ -8818,7 +8811,6 @@ components:
         createdTime:
           readOnly: true
           type: string
-          format: date-time
         apiInfo:
           $ref: '#/components/schemas/APIRevisionAPIInfo'
         deploymentInfo:
@@ -8892,11 +8884,9 @@ components:
         deployedTime:
           readOnly: true
           type: string
-          format: date-time
         successDeployedTime:
           readOnly: true
           type: string
-          format: date-time
     AuditReport:
       title: Resource for Audit Report
       type: object
@@ -11182,12 +11172,6 @@ components:
             Is Cross Tenant Subscriptions Enabled
           example: false
           default: false
-        defaultAdvancePolicy:
-          type: string
-          description: Default Advance Policy.
-        defaultSubscriptionPolicy:
-          type: string
-          description: Default Subscription Policy.
         authorizationHeader:
           type: string
           description: Authorization Header
@@ -11556,9 +11540,6 @@ components:
         displayName:
           type: string
           example: Remove Header Policy
-        version:
-          type: string
-          example: v1
         description:
           type: string
           example: With this policy, user can add a new header to the request
