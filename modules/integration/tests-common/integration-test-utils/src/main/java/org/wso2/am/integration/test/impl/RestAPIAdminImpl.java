@@ -699,7 +699,7 @@ public class RestAPIAdminImpl {
      * @return API response returned by API call.
      * @throws ApiException if an error occurs while retrieving tenant Config.
      */
-    public String getTenantConfig() throws ApiException {
+    public Object getTenantConfig() throws ApiException {
         return tenantConfigApi.exportTenantConfig();
     }
 
