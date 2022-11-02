@@ -22,16 +22,22 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.MediaType;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,24 +46,42 @@ public class JWTRevocationServerRestartTestCase extends APIManagerLifecycleBaseT
     private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
 
+    private String consumerKey;
+    private String consumerSecret;
+    private Map<String, String> requestHeaders;
+    private String apiInvocationUrl;
+    private String accessToken;
+    private String jwtRevocationAppId;
+
     @BeforeClass
-    public void initialize() throws Exception {
+    public void initialize(ITestContext ctx) throws Exception {
         super.init();
+
+        jwtRevocationAppId = (String) ctx.getAttribute("jwtRevocationAppId");
+        //Generate production access token
+        ArrayList<String> jwtRevocationGrantTypes = new ArrayList<>();
+        jwtRevocationGrantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO jwtRevocationApplicationKeyDTO = restAPIStore
+                .generateKeys(jwtRevocationAppId, APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, null,
+                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, jwtRevocationGrantTypes);
+        Assert.assertNotNull(jwtRevocationApplicationKeyDTO.getToken());
+        accessToken = jwtRevocationApplicationKeyDTO.getToken().getAccessToken();
+        consumerKey = jwtRevocationApplicationKeyDTO.getConsumerKey();
+        consumerSecret = jwtRevocationApplicationKeyDTO.getConsumerSecret();
+
+        apiInvocationUrl = getAPIInvocationURLHttp("jwtTokenTestAPI/1.0.0/customers/123");
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", MediaType.TEXT_XML);
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
     }
 
     @Test(groups = "wso2.am", description = "testing jwt token revocation")
     public void testJWTTokenRevocation() throws Exception {
-        log.info("=========jwt start======================");
-        //set parameter values
-        String consumerKey = serverRestartTestCase.getJwtRevocationConsumerKey();
-        String consumerSecret = serverRestartTestCase.getJwtRevocationConsumerSecret();
-        Map<String, String> apiInvocationRequestHeaders = serverRestartTestCase.getJwtRevocationRequestHeaders();
-        String apiInvocationUrl = serverRestartTestCase.getJwtRevocationApiInvocationUrl();
-        String accessToken = serverRestartTestCase.getJwtRevocationAccessToken();
 
         // Test JWT token validity before revocation
         HttpResponse invocationResponse =
-                HttpRequestUtil.doGet(apiInvocationUrl, apiInvocationRequestHeaders);
+                HttpRequestUtil.doGet(apiInvocationUrl, requestHeaders);
         Assert.assertEquals(invocationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before Retire");
         Assert.assertTrue(invocationResponse.getData().contains(API_RESPONSE_DATA),
@@ -71,7 +95,7 @@ public class JWTRevocationServerRestartTestCase extends APIManagerLifecycleBaseT
         revokeRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, StandardCharsets.UTF_8));
         String input = "token=" + accessToken;
         URL revokeEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/revoke");
-        org.wso2.carbon.automation.test.utils.http.client.HttpResponse revokeResponse;
+        HttpResponse revokeResponse;
         try {
             revokeResponse = HTTPSClientUtils.doPost(revokeEndpointURL, input, revokeRequestHeaders);
             Assert.assertEquals(revokeResponse.getResponseCode(), 200);
@@ -89,7 +113,7 @@ public class JWTRevocationServerRestartTestCase extends APIManagerLifecycleBaseT
             // Wait while the JMS message is received to the related JMS topic
             Thread.sleep(1000L);
             invocationResponseAfterRevoked = HttpRequestUtil.doGet(apiInvocationUrl,
-                    apiInvocationRequestHeaders);
+                    requestHeaders);
             int invocationResponseCodeAfterRevoked = invocationResponseAfterRevoked.getResponseCode();
 
             if (invocationResponseCodeAfterRevoked == HTTP_RESPONSE_CODE_UNAUTHORIZED) {
@@ -107,7 +131,6 @@ public class JWTRevocationServerRestartTestCase extends APIManagerLifecycleBaseT
         Assert.assertFalse(isTokenValid, "Access token revocation failed. API invocation response code is expected to" +
                 " be : " + HTTP_RESPONSE_CODE_UNAUTHORIZED + ", but got " + invocationResponseAfterRevoked.getResponseCode());
 
-        log.info("=========jwt end======================");
     }
 
 }

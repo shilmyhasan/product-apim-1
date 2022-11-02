@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -44,12 +45,11 @@ import java.util.Map;
 
 public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegrationBaseTest {
 
-    private String apiId;
-    private String gatewayUrl;
+    private String jwtBandwidthApiId;
+    private String jwtBandwidthGatewayUrl;
     String app1Id;
     String app2Id;
     String app3Id;
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
     private final String body = "{\"payload\" : \"00000000000000000000000000000000000000000000000000000000000000000000"
             + "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
             + "00000000000000000000000000\"}";
@@ -57,10 +57,10 @@ public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegration
     private static final Log log = LogFactory.getLog(JWTBandwidthThrottlingTestCase.class);
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
+    public void setEnvironment(ITestContext ctx) throws Exception {
         super.init();
-        apiId = serverRestartTestCase.getJwtBandwidthApiId();
-        gatewayUrl = serverRestartTestCase.getJwtBandwidthGatewayUrl();
+        jwtBandwidthApiId = (String) ctx.getAttribute("jwtBandwidthApiId");
+        jwtBandwidthGatewayUrl = (String) ctx.getAttribute("jwtBandwidthGatewayUrl");
     }
 
     @Test(groups = { "wso2.am" })
@@ -70,7 +70,7 @@ public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegration
                 appPolicyName, "", "this-is-test");
         app1Id = applicationDTO.getApplicationId();
         Assert.assertEquals(appPolicyName, applicationDTO.getThrottlingPolicy());
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationDTO.getApplicationId(),
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(jwtBandwidthApiId, applicationDTO.getApplicationId(),
                 Constants.TIERS_UNLIMITED);
         Assert.assertEquals(subscriptionDTO.getThrottlingPolicy(), Constants.TIERS_UNLIMITED);
 
@@ -92,7 +92,7 @@ public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegration
         HttpResponse response;
         boolean isThrottled = false;
         for (int i = 0; i < 15; i++) {
-            response = HTTPSClientUtils.doPost(gatewayUrl, requestHeaders, body);
+            response = HTTPSClientUtils.doPost(jwtBandwidthGatewayUrl, requestHeaders, body);
             log.info("==============Response " + response.getResponseCode());
             if (response.getResponseCode() == 429) {
                 isThrottled = true;
@@ -113,7 +113,7 @@ public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegration
         app2Id = applicationDTO.getApplicationId();
 
         String subPolicyName = "SubPolicyWithBandwidth";
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationDTO.getApplicationId(),
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(jwtBandwidthApiId, applicationDTO.getApplicationId(),
                 subPolicyName);
         Assert.assertEquals(subPolicyName, subscriptionDTO.getThrottlingPolicy());
         ArrayList<String> grantTypes = new ArrayList<>();
@@ -133,7 +133,7 @@ public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegration
         HttpResponse response;
         boolean isThrottled = false;
         for (int i = 0; i < 15; i++) {
-            response = HTTPSClientUtils.doPost(gatewayUrl, requestHeaders, body);
+            response = HTTPSClientUtils.doPost(jwtBandwidthGatewayUrl, requestHeaders, body);
             log.info("==============Response " + response.getResponseCode());
             if (response.getResponseCode() == 429) {
                 isThrottled = true;
@@ -149,16 +149,16 @@ public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegration
     @Test(groups = { "wso2.am" }, dependsOnMethods = { "testSubscriptionLevelThrottling",
             "testApplicationLevelThrottling" })
     public void testAPILevelThrottling() throws Exception {
-        HttpResponse api = restAPIPublisher.getAPI(apiId);
+        HttpResponse api = restAPIPublisher.getAPI(jwtBandwidthApiId);
         Gson gson = new Gson();
         APIDTO apidto = gson.fromJson(api.getData(), APIDTO.class);
         String apiPolicyName = "APIPolicyWithBandwidth";
         apidto.setApiThrottlingPolicy(apiPolicyName);
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, jwtBandwidthApiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), apiPolicyName, "API tier not updated.");
 
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(jwtBandwidthApiId, restAPIPublisher);
 
         waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
@@ -167,7 +167,7 @@ public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegration
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
         app3Id = applicationDTO.getApplicationId();
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationDTO.getApplicationId(),
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(jwtBandwidthApiId, applicationDTO.getApplicationId(),
                 Constants.TIERS_UNLIMITED);
         Assert.assertEquals(subscriptionDTO.getThrottlingPolicy(), Constants.TIERS_UNLIMITED);
 
@@ -187,7 +187,7 @@ public class JWTBandwidthThrottlingServerRestartTestCase extends APIMIntegration
         HttpResponse response;
         boolean isThrottled = false;
         for (int i = 0; i < 15; i++) {
-            response = HTTPSClientUtils.doPost(gatewayUrl, requestHeaders, body);
+            response = HTTPSClientUtils.doPost(jwtBandwidthGatewayUrl, requestHeaders, body);
             log.info("==============Response " + response.getResponseCode());
             if (response.getResponseCode() == 429) {
                 isThrottled = true;

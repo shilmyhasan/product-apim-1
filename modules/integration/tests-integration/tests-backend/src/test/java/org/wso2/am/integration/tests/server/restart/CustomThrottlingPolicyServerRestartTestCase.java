@@ -19,6 +19,7 @@ package org.wso2.am.integration.tests.server.restart;
 
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiException;
@@ -32,32 +33,31 @@ import java.util.UUID;
 
 public class CustomThrottlingPolicyServerRestartTestCase extends APIMIntegrationBaseTest {
 
-    private String policyId;
-    private CustomRuleDTO customRuleDTO;
-    private AdminApiTestHelper adminApiTestHelper;
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
+    private String customThrottlingPolicyId;
+    private CustomRuleDTO customThrottlingRuleDTO;
+    private AdminApiTestHelper customThrottlingAdminApiTestHelper;
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
+    public void setEnvironment(ITestContext ctx) throws Exception {
         super.init();
-        policyId = serverRestartTestCase.getCustomThrottlingPolicyId();
-        customRuleDTO = serverRestartTestCase.getCustomThrottlingRuleDTO();
-        adminApiTestHelper = serverRestartTestCase.getCustomThrottlingAdminApiTestHelper();
+        customThrottlingPolicyId = (String) ctx.getAttribute("customThrottlingPolicyId");
+        customThrottlingRuleDTO = (CustomRuleDTO) ctx.getAttribute("customThrottlingRuleDTO");
+        customThrottlingAdminApiTestHelper = (AdminApiTestHelper) ctx.getAttribute("customThrottlingAdminApiTestHelper");
     }
 
     @Test(groups = {"wso2.am"}, description = "Test get custom throttling policy")
     public void testGetPolicy() throws ApiException {
 
         if (userMode == TestUserMode.TENANT_ADMIN) {
-            policyId = UUID.randomUUID().toString() + UUID.randomUUID().toString();
+            customThrottlingPolicyId = UUID.randomUUID().toString() + UUID.randomUUID().toString();
         }
         //Get the added custom throttling policy
-        ApiResponse<CustomRuleDTO> retrievedPolicy = restAPIAdmin.getCustomThrottlingPolicy(policyId);
+        ApiResponse<CustomRuleDTO> retrievedPolicy = restAPIAdmin.getCustomThrottlingPolicy(customThrottlingPolicyId);
         CustomRuleDTO retrievedPolicyDTO = retrievedPolicy.getData();
         Assert.assertEquals(retrievedPolicy.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the retrieved custom throttling policy DTO
-        adminApiTestHelper.verifyCustomThrottlePolicyDTO(customRuleDTO, retrievedPolicyDTO);
+        customThrottlingAdminApiTestHelper.verifyCustomThrottlePolicyDTO(customThrottlingRuleDTO, retrievedPolicyDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test update custom throttling policy",
@@ -66,15 +66,15 @@ public class CustomThrottlingPolicyServerRestartTestCase extends APIMIntegration
 
         //Update the custom throttling policy
         String updatedDescription = "This is a updated test custom throttle policy";
-        customRuleDTO.setDescription(updatedDescription);
+        customThrottlingRuleDTO.setDescription(updatedDescription);
         ApiResponse<CustomRuleDTO> updatedPolicy;
-        updatedPolicy = restAPIAdmin.updateCustomThrottlingPolicy(policyId, customRuleDTO);
+        updatedPolicy = restAPIAdmin.updateCustomThrottlingPolicy(customThrottlingPolicyId, customThrottlingRuleDTO);
 
         CustomRuleDTO updatedPolicyDTO = updatedPolicy.getData();
         Assert.assertEquals(updatedPolicy.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the updated custom throttling policy DTO
-        adminApiTestHelper.verifyCustomThrottlePolicyDTO(customRuleDTO, updatedPolicyDTO);
+        customThrottlingAdminApiTestHelper.verifyCustomThrottlePolicyDTO(customThrottlingRuleDTO, updatedPolicyDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add custom throttling policy with existing policy name",
@@ -84,7 +84,7 @@ public class CustomThrottlingPolicyServerRestartTestCase extends APIMIntegration
         //Exception occurs when adding an custom throttling policy with an existing policy name. The status code
         //in the Exception object is used to assert this scenario
         try {
-            restAPIAdmin.addCustomThrottlingPolicy(customRuleDTO);
+            restAPIAdmin.addCustomThrottlingPolicy(customThrottlingRuleDTO);
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
         }
@@ -94,7 +94,7 @@ public class CustomThrottlingPolicyServerRestartTestCase extends APIMIntegration
             dependsOnMethods = "testAddPolicyWithExistingPolicyName")
     public void testDeletePolicy() throws ApiException {
 
-        ApiResponse<Void> apiResponse = restAPIAdmin.deleteCustomThrottlingPolicy(policyId);
+        ApiResponse<Void> apiResponse = restAPIAdmin.deleteCustomThrottlingPolicy(customThrottlingPolicyId);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 

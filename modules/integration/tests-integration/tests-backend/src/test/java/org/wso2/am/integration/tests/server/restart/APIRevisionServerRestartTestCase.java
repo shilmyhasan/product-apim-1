@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.server.restart;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
@@ -59,22 +60,22 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String INVALID_API_UUID = "2C0q51h4-621g-3163-7eip-as246v8x681m";
     private final String INVALID_REVISION_UUID = "4bm28320-l75v-3895-70ks-025294jd85a5";
-    private String apiId;
+    private String apiRevisionApiId;
     private String revisionUUID;
     private String accessToken;
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void initialize(ITestContext ctx) throws Exception {
         super.init();
+        apiRevisionApiId = (String) ctx.getAttribute("apiRevisionApiId");
+
     }
 
     @Test(groups = {"wso2.am"}, description = "API Revision create test case")
     public void testCreateAPIRevision() throws Exception {
-        apiId = serverRestartTestCase.getApiRevisionApiId();
         // Create the API Revision creation request object
         APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
-        apiRevisionRequest.setApiUUID(apiId);
+        apiRevisionRequest.setApiUUID(apiRevisionApiId);
         apiRevisionRequest.setDescription("Test Revision 1");
 
         // Add the API Revision using the API Publisher
@@ -104,7 +105,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
     public void testCreateAPIRevisionWithoutDescription() throws Exception {
         // Create the API Revision creation request object
         APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
-        apiRevisionRequest.setApiUUID(apiId);
+        apiRevisionRequest.setApiUUID(apiRevisionApiId);
 
         // Add the API Revision using the API Publisher.
         HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
@@ -115,7 +116,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
     @Test(groups = {"wso2.am"}, description = "Check the availability of API Revision in publisher before deploying.",
             dependsOnMethods = "testCreateAPIRevisionWithoutDescription")
     public void testGetAPIRevisions() throws Exception {
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiRevisionApiId,null);
         Assert.assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
         List<JSONObject> revisionList = new ArrayList<>();
@@ -133,7 +134,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
     @Test(groups = {"wso2.am"}, description = "Check the availability of API Revision in publisher after deploying.",
             dependsOnMethods = "testGetAPIRevisions")
     public void testGetDeployedAPIRevisions() throws Exception {
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,"deployed:true");
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiRevisionApiId,"deployed:true");
         Assert.assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
         List<JSONObject> revisionList = new ArrayList<>();
@@ -157,7 +158,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
-        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiRevisionApiId, revisionUUID,
                 apiRevisionDeployRequestList,"API");
         Assert.assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
@@ -188,7 +189,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
-        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, INVALID_REVISION_UUID,
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiRevisionApiId, INVALID_REVISION_UUID,
                 apiRevisionDeployRequestList,"API");
         Assert.assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invalid response code for deploying API Revision with invalid Revision UUID:"
@@ -204,7 +205,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setVhost("gw.apim.com");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
-        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiRevisionApiId, revisionUUID,
                 apiRevisionDeployRequestList,"API");
         Assert.assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
                 "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
@@ -219,7 +220,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
-        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiRevisionApiId, revisionUUID,
                 apiRevisionUndeployRequestList);
         Assert.assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to Undeploy API Revisions:" + apiRevisionsUnDeployResponse.getData());
@@ -250,7 +251,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
-        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, INVALID_REVISION_UUID,
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiRevisionApiId, INVALID_REVISION_UUID,
                 apiRevisionUndeployRequestList);
         Assert.assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invalid Response Code for Undeploy API Revisions with Invalid Revision UUID:" +
@@ -267,7 +268,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
-        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, INVALID_REVISION_UUID,
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiRevisionApiId, INVALID_REVISION_UUID,
                 apiRevisionUndeployRequestList);
         Assert.assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invalid Response Code for Undeploy API Revisions with Invalid Revision UUID:" +
@@ -277,7 +278,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
     @Test(groups = {"wso2.am"}, description = "Test restoring API using created API Revision",
             dependsOnMethods = "testUnDeployAPIRevisionWithInvalidDeploymentInfo")
     public void testRestoreAPIRevision() throws Exception {
-        HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiId, revisionUUID);
+        HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiRevisionApiId, revisionUUID);
         Assert.assertEquals(apiRevisionsRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to restore API Revisions:" + apiRevisionsRestoreResponse.getData());
     }
@@ -295,7 +296,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testRestoreAPIRevisionWithInvalidAPIUUID")
     public void testRestoreAPIRevisionWithInvalidRevisionUUID() throws Exception {
         HttpResponse apiRevisionsWithInvalidRevisionUUIDRestoreResponse = restAPIPublisher
-                .restoreAPIRevision(apiId, INVALID_REVISION_UUID);
+                .restoreAPIRevision(apiRevisionApiId, INVALID_REVISION_UUID);
         Assert.assertEquals(apiRevisionsWithInvalidRevisionUUIDRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Unable to get Revision not found error: " +
                         apiRevisionsWithInvalidRevisionUUIDRestoreResponse.getData());
@@ -311,7 +312,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
-        HttpResponse apiRevisionDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+        HttpResponse apiRevisionDeployResponse = restAPIPublisher.deployAPIRevision(apiRevisionApiId, revisionUUID,
                 apiRevisionDeployRequestList,"API");
         Assert.assertEquals(apiRevisionDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions: " + apiRevisionDeployResponse.getData());
@@ -319,7 +320,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
 
         // Delete Revision
         HttpResponse apiRevisionsHavingDeploymentsDeleteResponse = restAPIPublisher
-                .deleteAPIRevision(apiId, revisionUUID);
+                .deleteAPIRevision(apiRevisionApiId, revisionUUID);
         Assert.assertEquals(apiRevisionsHavingDeploymentsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
                 "Unable to get error for deleting revisions having deployments: " +
                         apiRevisionsHavingDeploymentsDeleteResponse.getData());
@@ -335,13 +336,13 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
-        HttpResponse apiRevisionUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
+        HttpResponse apiRevisionUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiRevisionApiId, revisionUUID,
                 apiRevisionUndeployRequestList);
         Assert.assertEquals(apiRevisionUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to undeploy API Revisions: " + apiRevisionUnDeployResponse.getData());
 
         // Delete Revision
-        HttpResponse apiRevisionDeleteResponse = restAPIPublisher.deleteAPIRevision(apiId, revisionUUID);
+        HttpResponse apiRevisionDeleteResponse = restAPIPublisher.deleteAPIRevision(apiRevisionApiId, revisionUUID);
         Assert.assertEquals(apiRevisionDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to delete API Revisions: " + apiRevisionDeleteResponse.getData());
     }
@@ -360,7 +361,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testDeleteAPIRevisionWithInvalidAPIUUID")
     public void testDeleteAPIRevisionWithInvalidRevisionUUID() throws Exception {
         HttpResponse apiRevisionsWithInvalidRevisionUUIDDeleteResponse = restAPIPublisher
-                .deleteAPIRevision(apiId, INVALID_REVISION_UUID);
+                .deleteAPIRevision(apiRevisionApiId, INVALID_REVISION_UUID);
         Assert.assertEquals(apiRevisionsWithInvalidRevisionUUIDDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Unable to get Revision not found error: " +
                         apiRevisionsWithInvalidRevisionUUIDDeleteResponse.getData());
@@ -371,7 +372,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
     public void testInvokeAPIInCreatedLifecycleStage() throws Exception {
         // Create a Revision
         APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
-        apiRevisionRequest.setApiUUID(apiId);
+        apiRevisionRequest.setApiUUID(apiRevisionApiId);
         apiRevisionRequest.setDescription("Test Revision for Lifecycle Changes Testing API");
         HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
         Assert.assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
@@ -386,14 +387,14 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
-        HttpResponse apiRevisionDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+        HttpResponse apiRevisionDeployResponse = restAPIPublisher.deployAPIRevision(apiRevisionApiId, revisionUUID,
                 apiRevisionDeployRequestList, "API");
         Assert.assertEquals(apiRevisionDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revision in CREATED stage: " + apiRevisionDeployResponse.getData());
         waitForAPIDeployment();
 
         // Invoke API using internal api key
-        ApiResponse<APIKeyDTO> apiKeyDTO = restAPIPublisher.generateInternalApiKey(apiId);
+        ApiResponse<APIKeyDTO> apiKeyDTO = restAPIPublisher.generateInternalApiKey(apiRevisionApiId);
         String apiKey = apiKeyDTO.getData().getApikey();
         Map<String, String> invokeAPIRequestHeaders = new HashMap<>();
         invokeAPIRequestHeaders.put("accept", "*/*");
@@ -408,7 +409,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testInvokeAPIInCreatedLifecycleStage")
     public void testInvokeAPIInPublishedLifecycleStage() throws Exception {
         // Change lifecycle stage from CREATED to PUBLISHED
-        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId,
+        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiRevisionApiId,
                 APILifeCycleAction.PUBLISH.getAction(), null);
         Assert.assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to change lifecycle stage to PUBLISHED: " + apiLifecycleChangeResponse.getData());
@@ -418,7 +419,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         ApplicationDTO applicationDTO = restAPIStore.addApplication("RevisionTestApplication",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
         String applicationId = applicationDTO.getApplicationId();
-        restAPIStore.subscribeToAPI(apiId, applicationId,
+        restAPIStore.subscribeToAPI(apiRevisionApiId, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         // Generate access token
@@ -443,7 +444,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testInvokeAPIInPublishedLifecycleStage")
     public void testInvokeAPIInBlockedLifecycleStage() throws Exception {
         // Change lifecycle stage from PUBLISHED to BLOCKED
-        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId,
+        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiRevisionApiId,
                 APILifeCycleAction.BLOCK.getAction(), null);
         Assert.assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to change lifecycle stage to BLOCKED: " + apiLifecycleChangeResponse.getData());
@@ -463,7 +464,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testInvokeAPIInBlockedLifecycleStage")
     public void testInvokeAPIInDeprecatedLifecycleStage() throws Exception {
         // Change lifecycle stage from BLOCKED to DEPRECATED
-        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId,
+        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiRevisionApiId,
                 APILifeCycleAction.DEPRECATE.getAction(), null);
         Assert.assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to change lifecycle stage to DEPRECATED: " + apiLifecycleChangeResponse.getData());
@@ -483,7 +484,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testInvokeAPIInDeprecatedLifecycleStage")
     public void testInvokeAPIInRetiredLifecycleStage() throws Exception {
         // Change lifecycle stage from DEPRECATED to RETIRED
-        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId,
+        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiRevisionApiId,
                 APILifeCycleAction.RETIRE.getAction(), null);
         Assert.assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to change lifecycle stage to RETIRED: " + apiLifecycleChangeResponse.getData());

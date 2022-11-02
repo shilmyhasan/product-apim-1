@@ -19,14 +19,19 @@
 package org.wso2.am.integration.tests.server.restart;
 
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class AccessibilityOfBlockAPIServerRestartTestCase extends APIManagerLifecycleBaseTest {
@@ -35,19 +40,33 @@ public class AccessibilityOfBlockAPIServerRestartTestCase extends APIManagerLife
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private Map<String, String> requestHeaders;
-    private String apiId;
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
+    private String accessibilityOfBlockApiId;
+    private String accessibilityOfBlockApplicationId;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException {
+    public void initialize(ITestContext ctx) throws APIManagerIntegrationTestException {
         super.init();
+        accessibilityOfBlockApplicationId = (String) ctx.getAttribute("accessibilityOfBlockApplicationId");
+        accessibilityOfBlockApiId = (String) ctx.getAttribute("accessibilityOfBlockApiId");
+
     }
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before block")
     public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws Exception {
-        //set parameters
-        apiId = serverRestartTestCase.getAccessibilityOfBlockApiId();
-        requestHeaders = serverRestartTestCase.getAccessibilityOfBlockRequestHeaders();
+
+        ArrayList accessibilityOfBlockGrantTypes = new ArrayList();
+        accessibilityOfBlockGrantTypes.add("client_credentials");
+
+        //get access token
+        ApplicationKeyDTO accessibilityOfBlockApplicationKeyDTO = restAPIStore.generateKeys(accessibilityOfBlockApplicationId,
+                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                null, accessibilityOfBlockGrantTypes);
+        Assert.assertNotNull(accessibilityOfBlockApplicationKeyDTO.getToken());
+        String accessibilityOfBlockAccessToken = accessibilityOfBlockApplicationKeyDTO.getToken().getAccessToken();
+        // Create requestHeaders
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + accessibilityOfBlockAccessToken);
 
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
@@ -67,9 +86,9 @@ public class AccessibilityOfBlockAPIServerRestartTestCase extends APIManagerLife
     public void testChangeAPILifecycleToBlock() throws Exception {
         //Block the API version 1.0.0
         HttpResponse response = restAPIPublisher
-                .changeAPILifeCycleStatus(apiId, APILifeCycleAction.BLOCK.getAction(), null);
+                .changeAPILifeCycleStatus(accessibilityOfBlockApiId, APILifeCycleAction.BLOCK.getAction(), null);
         Assert.assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API publish Response code is invalid " + apiId);
+                "API publish Response code is invalid " + accessibilityOfBlockApiId);
     }
 
 

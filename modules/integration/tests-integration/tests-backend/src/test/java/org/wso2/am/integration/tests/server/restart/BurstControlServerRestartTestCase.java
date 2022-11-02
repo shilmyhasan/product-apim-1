@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.server.restart;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -39,16 +40,15 @@ import java.util.Map;
 
 public class BurstControlServerRestartTestCase extends APIManagerLifecycleBaseTest {
 
-    private String apiId;
-    private ApplicationDTO applicationDTO;
+    private String burstControlApiId;
+    private ApplicationDTO burstControlApplicationDTO;
     private final Log log = LogFactory.getLog(BurstControlServerRestartTestCase.class);
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
+    public void setEnvironment(ITestContext ctx) throws Exception {
         super.init();
-        apiId = serverRestartTestCase.getBurstControlApiId();
-        applicationDTO = serverRestartTestCase.getBurstControlApplicationDTO();
+        burstControlApiId = (String) ctx.getAttribute("burstControlApiId");
+        burstControlApplicationDTO = (ApplicationDTO) ctx.getAttribute("burstControlApplicationDTO");
     }
 
     @Test(groups = { "wso2.am" }, description = "Test changing the burst limit of an API subscription by subscribing "
@@ -56,7 +56,7 @@ public class BurstControlServerRestartTestCase extends APIManagerLifecycleBaseTe
     public void testBurstLimitChange() throws Exception {
         //subscribe to API
         String subscriptionTier5RPMburst = "SubscriptionTier5RPMburst";
-        SubscriptionDTO subscriptionDTO1 = restAPIStore.subscribeToAPI(apiId, applicationDTO.getApplicationId(),
+        SubscriptionDTO subscriptionDTO1 = restAPIStore.subscribeToAPI(burstControlApiId, burstControlApplicationDTO.getApplicationId(),
                 subscriptionTier5RPMburst);
         Assert.assertEquals(subscriptionTier5RPMburst, subscriptionDTO1.getThrottlingPolicy(), "Error occurred "
                 + "while subscribing to the api. Subscribed policy is not as expected as "
@@ -65,7 +65,7 @@ public class BurstControlServerRestartTestCase extends APIManagerLifecycleBaseTe
         // generate keys and token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(), "3600",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(burstControlApplicationDTO.getApplicationId(), "3600",
                 null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         Assert.assertNotNull(applicationKeyDTO.getToken());
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
@@ -91,7 +91,7 @@ public class BurstControlServerRestartTestCase extends APIManagerLifecycleBaseTe
 
         // add new subscription
         String subscriptionTier25RPMburst = "SubscriptionTier25RPMburst";
-        SubscriptionDTO subscriptionDTO2 = restAPIStore.subscribeToAPI(apiId, applicationDTO.getApplicationId(),
+        SubscriptionDTO subscriptionDTO2 = restAPIStore.subscribeToAPI(burstControlApiId, burstControlApplicationDTO.getApplicationId(),
                 subscriptionTier25RPMburst);
         Assert.assertEquals(subscriptionTier25RPMburst, subscriptionDTO2.getThrottlingPolicy(), "Error occurred "
                 + "while subscribing to the api. Subscribed policy is not as expected as "

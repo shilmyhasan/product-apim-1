@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiException;
@@ -39,16 +40,14 @@ import java.util.Arrays;
 import java.util.UUID;
 public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
 
-    private AdminApiTestHelper adminApiTestHelper;
+    private AdminApiTestHelper keyManagerAdminApiTestHelper;
     private KeyManagerDTO keyManagerDTO;
 
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
-
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
+    public void setEnvironment(ITestContext ctx) throws Exception {
         super.init();
-        keyManagerDTO = serverRestartTestCase.getKeyManagerDTO();
-        adminApiTestHelper = serverRestartTestCase.getKeyManagerAdminApiTestHelper();
+        keyManagerDTO = (KeyManagerDTO) ctx.getAttribute("keyManagerDTO");
+        keyManagerAdminApiTestHelper = (AdminApiTestHelper) ctx.getAttribute("keyManagerAdminApiTestHelper");
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type without a mandatory parameter")
@@ -129,7 +128,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test get key manager with Auth0 type",
@@ -147,10 +146,10 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
         //Verify the added key manager additional properties
-        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+        keyManagerAdminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
                 retrievedKeyManagerDTO.getAdditionalProperties());
         //Verify the added key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test update key manager with Auth0 type",
@@ -165,7 +164,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the updated key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
         waitForKeyManagerDeployment(user.getUserDomain(), keyManagerDTO.getName());
     }
 
@@ -221,7 +220,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
         restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
@@ -300,7 +299,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test get key manager with Wso2IS type",
@@ -317,10 +316,10 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
         //Verify the added key manager additional properties
-        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+        keyManagerAdminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
                 retrievedKeyManagerDTO.getAdditionalProperties());
         //Verify the added key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test update key manager With Wso2IS type",
@@ -335,7 +334,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the updated key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test delete key manager With Wso2IS type",
@@ -389,7 +388,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
         restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
@@ -464,7 +463,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test get key manager with Keycloak type",
@@ -481,10 +480,10 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
         //Verify the added key manager additional properties
-        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+        keyManagerAdminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
                 retrievedKeyManagerDTO.getAdditionalProperties());
         //Verify the added key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test update key manager with Keycloak type",
@@ -499,7 +498,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the updated key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test delete key manager With Keycloak type",
@@ -554,7 +553,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
         restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
@@ -633,7 +632,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test get key manager with Okta type",
@@ -651,10 +650,10 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
         //Verify the added key manager additional properties
-        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+        keyManagerAdminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
                 retrievedKeyManagerDTO.getAdditionalProperties());
         //Verify the added key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test update key manager with Okta type",
@@ -669,7 +668,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the updated key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test delete key manager With Okta type",
@@ -726,7 +725,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
         restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
@@ -807,7 +806,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test get key manager with PingFederate type",
@@ -826,10 +825,10 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
         //Verify the added key manager additional properties
-        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+        keyManagerAdminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
                 retrievedKeyManagerDTO.getAdditionalProperties());
         //Verify the added key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test update key manager with PingFederate type",
@@ -844,7 +843,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the updated key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test delete key manager with PingFederate type",
@@ -899,7 +898,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
         restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
@@ -979,7 +978,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
         waitForKeyManagerDeployment(user.getUserDomain(), keyManagerDTO.getName());
     }
 
@@ -997,10 +996,10 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
         //Verify the added key manager additional properties
-        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+        keyManagerAdminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
                 retrievedKeyManagerDTO.getAdditionalProperties());
         //Verify the added key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test update key manager with ForgeRock type",
@@ -1015,7 +1014,7 @@ public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the updated key manager DTO
-        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test delete key manager with ForgeRock type",

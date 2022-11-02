@@ -25,6 +25,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.simple.JSONObject;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
@@ -43,27 +44,27 @@ import java.util.Map;
 
 public class DefaultVersionAPIServerRestartTestCase extends APIManagerLifecycleBaseTest {
 
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
-    private String apiId;
-    String accessToken;
+    private String defaultVersionApiId;
+    String defaultVersionAccessToken;
     String newAPIVersion;
 
     @BeforeClass
-    public void initialize() throws Exception {
+    public void initialize(ITestContext ctx) throws Exception {
         super.init();
+        defaultVersionApiId = (String) ctx.getAttribute("defaultVersionApiId");
+        defaultVersionAccessToken = (String) ctx.getAttribute("defaultVersionAccessToken");
+
     }
     @Test(groups = "wso2.am", description = "Create new version of API with default Version enable in created stage " +
             "and verify")
     public void createNewVersionWithDefaultVersionOptionAndVerifyDefaultAPIBreaking() throws Exception {
 
-        apiId = serverRestartTestCase.getDefaultVersionApiId();
-        accessToken = serverRestartTestCase.getDefaultVersionAccessToken();
         String apiVersion = "2.0.0";
         String apiContext = "defaultversion";
         String endpointUrl = getGatewayURLNhttp() + "version2";
-        newAPIVersion = restAPIPublisher.createNewAPIVersion(apiVersion, apiId, true);
+        newAPIVersion = restAPIPublisher.createNewAPIVersion(apiVersion, defaultVersionApiId, true);
         // verify Default Version still not changed to 2.0.0 API
-        APIDTO storeAPI = restAPIStore.getAPI(apiId);
+        APIDTO storeAPI = restAPIStore.getAPI(defaultVersionApiId);
         List<APIEndpointURLsDTO> endpointURLs = storeAPI.getEndpointURLs();
         Assert.assertNotNull(endpointURLs);
         Assert.assertEquals(endpointURLs.size(), 1);
@@ -75,7 +76,7 @@ public class DefaultVersionAPIServerRestartTestCase extends APIManagerLifecycleB
         HttpResponse directResponse = invokeWithGet(endpointUrl, new HashMap<>());
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + accessToken);
+        headers.put("Authorization", "Bearer " + defaultVersionAccessToken);
         // Check Still Default API Invocation works successfully.
         String defaultVersionAPIInvocationUrl = getAPIInvocationURLHttp(apiContext);
         HttpResponse defaultHttpResponse = invokeWithGet(defaultVersionAPIInvocationUrl, headers);
@@ -103,7 +104,7 @@ public class DefaultVersionAPIServerRestartTestCase extends APIManagerLifecycleB
         apiRevisionDeployUndeployRequest.setDisplayOnDevportal(true);
         restAPIPublisher.deployAPIRevision(newAPIVersion, apiRevisionDTO.getId(), apiRevisionDeployUndeployRequest,
                 "API");
-        APIDTO storeAPIAfterUpdate = restAPIStore.getAPI(apiId);
+        APIDTO storeAPIAfterUpdate = restAPIStore.getAPI(defaultVersionApiId);
         endpointURLs = storeAPIAfterUpdate.getEndpointURLs();
         Assert.assertNotNull(endpointURLs);
         Assert.assertEquals(endpointURLs.size(), 1);
@@ -132,10 +133,10 @@ public class DefaultVersionAPIServerRestartTestCase extends APIManagerLifecycleB
     public void changeNewVersionBacktoV1AndVerify() throws Exception {
         String apiContext = "defaultversion";
         org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO oldAPI =
-                restAPIPublisher.getAPIByID(apiId);
+                restAPIPublisher.getAPIByID(defaultVersionApiId);
         oldAPI.setIsDefaultVersion(true);
         restAPIPublisher.updateAPI(oldAPI);
-        APIDTO storeAPI = restAPIStore.getAPI(apiId);
+        APIDTO storeAPI = restAPIStore.getAPI(defaultVersionApiId);
         List<APIEndpointURLsDTO> endpointURLs = storeAPI.getEndpointURLs();
         Assert.assertNotNull(endpointURLs);
         Assert.assertEquals(endpointURLs.size(), 1);
@@ -144,7 +145,7 @@ public class DefaultVersionAPIServerRestartTestCase extends APIManagerLifecycleB
         Assert.assertNotNull(defaultVersionURLs.getHttp());
         Assert.assertNotNull(defaultVersionURLs.getHttps());
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + accessToken);
+        headers.put("Authorization", "Bearer " + defaultVersionAccessToken);
         // Check Still Default API Invocation works successfully.
         waitForAPIDeployment();
         String defaultVersionAPIInvocationUrl = getAPIInvocationURLHttp(apiContext);
@@ -159,12 +160,12 @@ public class DefaultVersionAPIServerRestartTestCase extends APIManagerLifecycleB
         Assert.assertNotNull(defaultVersionURLs);
         Assert.assertNull(defaultVersionURLs.getHttp());
         Assert.assertNull(defaultVersionURLs.getHttps());
-        oldAPI = restAPIPublisher.getAPIByID(apiId);
+        oldAPI = restAPIPublisher.getAPIByID(defaultVersionApiId);
         oldAPI.setIsDefaultVersion(false);
         restAPIPublisher.updateAPI(oldAPI);
         defaultHttpResponse = invokeDefaultAPIWithWait(defaultVersionAPIInvocationUrl, headers, 404);
         Assert.assertEquals(defaultHttpResponse.getResponseCode(), 404);
-        storeAPIAfterUpdate = restAPIStore.getAPI(apiId);
+        storeAPIAfterUpdate = restAPIStore.getAPI(defaultVersionApiId);
         endpointURLs = storeAPIAfterUpdate.getEndpointURLs();
         Assert.assertNotNull(endpointURLs);
         Assert.assertEquals(endpointURLs.size(), 1);

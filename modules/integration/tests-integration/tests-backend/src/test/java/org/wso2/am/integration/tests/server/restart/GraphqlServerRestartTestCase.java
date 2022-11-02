@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -71,19 +72,18 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
     private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlUser";
     private static final String GRAPHQL_ROLE = "graphqlrole";
     private static final long WAIT_TIME = 45 * 1000;
-    private String schemaDefinition;
-    private String graphqlAPIId;
+    private String graphQLSchemaDefinition;
+    private String graphQLAPIId;
     private String testAppId1;
     private String testAppId2;
     private String testAppId3;
     private String testAppId4;
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
+    public void setEnvironment(ITestContext ctx) throws Exception {
         super.init();
-        graphqlAPIId = serverRestartTestCase.getGraphQLAPIId();
-        schemaDefinition = serverRestartTestCase.getGraphQLSchemaDefinition();
+        graphQLAPIId = (String) ctx.getAttribute("graphQLAPIId");
+        graphQLSchemaDefinition = (String) ctx.getAttribute("graphQLSchemaDefinition");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create and publish GraphQL APIs by providing GraphQL schema with " +
@@ -135,8 +135,8 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "test retrieve schemaDefinition at publisher")
     public void testRetrieveSchemaDefinitionAtPublisher() throws Exception {
-        GraphQLSchemaDTO schema = restAPIPublisher.getGraphqlSchemaDefinition(graphqlAPIId);
-        Assert.assertEquals(schema.getSchemaDefinition(), schemaDefinition);
+        GraphQLSchemaDTO schema = restAPIPublisher.getGraphqlSchemaDefinition(graphQLAPIId);
+        Assert.assertEquals(schema.getSchemaDefinition(), graphQLSchemaDefinition);
     }
 
     @Test(groups = {"wso2.am"}, description = "test update schemaDefinition at publisher",
@@ -146,11 +146,11 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
         String updatedSchemaDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream("graphql" + File.separator + "updatedSchema.graphql"),
                 StandardCharsets.UTF_8);
-        restAPIPublisher.updateGraphqlSchemaDefinition(graphqlAPIId, updatedSchemaDefinition);
-        GraphQLSchemaDTO schema = restAPIPublisher.getGraphqlSchemaDefinition(graphqlAPIId);
+        restAPIPublisher.updateGraphqlSchemaDefinition(graphQLAPIId, updatedSchemaDefinition);
+        GraphQLSchemaDTO schema = restAPIPublisher.getGraphqlSchemaDefinition(graphQLAPIId);
         Assert.assertEquals(schema.getSchemaDefinition(), updatedSchemaDefinition);
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(graphqlAPIId, restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(graphQLAPIId, restAPIPublisher);
     }
 
 
@@ -222,13 +222,13 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
         ArrayList apiScopeList = new ArrayList();
         apiScopeList.add(apiScopeDTO);
 
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPIId);
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphQLAPIId);
         Gson g = new Gson();
         APIDTO apidto = g.fromJson(createdApiResponse.getData(), APIDTO.class);
         apidto.setScopes(apiScopeList);
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, graphqlAPIId);
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, graphQLAPIId);
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(graphqlAPIId, restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(graphQLAPIId, restAPIPublisher);
 
         ArrayList scope = new ArrayList();
         scope.add("subscriber");
@@ -243,9 +243,9 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
         );
 
         apidto.operations(operations);
-        restAPIPublisher.updateAPI(apidto, graphqlAPIId);
+        restAPIPublisher.updateAPI(apidto, graphQLAPIId);
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(graphqlAPIId, restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(graphQLAPIId, restAPIPublisher);
 
         testAppId3 = createGraphqlAppAndSubscribeToAPI("testOperationalLevelOAuthScopesForGraphql", "OAUTH");
         // Keep sufficient time to update map
@@ -307,7 +307,7 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
             "testOperationalLevelOAuthScopesForGraphql" })
     public void testOperationalLevelSecurityForGraphql()
             throws Exception {
-        HttpResponse response = restAPIPublisher.getAPI(graphqlAPIId);
+        HttpResponse response = restAPIPublisher.getAPI(graphQLAPIId);
         Gson g = new Gson();
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
 
@@ -322,9 +322,9 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
         );
 
         apidto.operations(operations);
-        restAPIPublisher.updateAPI(apidto, graphqlAPIId);
+        restAPIPublisher.updateAPI(apidto, graphQLAPIId);
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(graphqlAPIId, restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(graphQLAPIId, restAPIPublisher);
         waitForAPIDeployment();
 
         testAppId4 = createGraphqlAppAndSubscribeToAPI(  "CountriesOauthAPPForSecurityCheck","OAUTH");
@@ -373,7 +373,7 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
                 restAPIStore.addApplicationWithTokenType(appName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                         "", "test app for countries API", tokenType);
         String testApiId = applicationDTO.getApplicationId();
-        restAPIStore.subscribeToAPI(graphqlAPIId, testApiId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        restAPIStore.subscribeToAPI(graphQLAPIId, testApiId, APIMIntegrationConstants.API_TIER.UNLIMITED);
         return testApiId;
     }
 

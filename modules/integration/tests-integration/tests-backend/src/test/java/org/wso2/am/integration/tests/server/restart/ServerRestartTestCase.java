@@ -34,6 +34,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
@@ -50,7 +51,6 @@ import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -59,7 +59,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileWriter;
@@ -79,24 +78,14 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(ServerRestartTestCase.class);
     private String apiThrottleApplicationId;
     private String apiThrottleApiId;
-    private String apiThrottleInvokeURL;
-    private Map<String, String> apiThrottleRequestHeaders;
     private String defaultVersionApplicationID;
-    private String defaultVersionAccessToken;
     private String defaultVersionApiId;
-    private String jwtRevocationConsumerKey;
-    private String jwtRevocationConsumerSecret;
-    private Map<String, String> jwtRevocationRequestHeaders;
-    private String jwtRevocationApiInvocationUrl;
-    private String jwtRevocationAccessToken;
     private String jwtRevocationAppId;
     private String jwtRevocationApiId;
     private String apiRevisionApiId;
-    private Map<String, String> accessibilityOfBlockRequestHeaders;
     private String accessibilityOfBlockApiId;
     private String accessibilityOfBlockApplicationId;
     private String jwtBandwidthApiId;
-    private String jwtBandwidthGatewayUrl;
     private String jwtBandwidthApiPolicyId;
     private String jwtBandwidthAppPolicyId;
     private String jwtBandwidthSubPolicyId;
@@ -104,15 +93,9 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
     private String burstControlApiId;
     private SubscriptionThrottlePolicyDTO burstControlSubscriptionThrottlePolicyDTO1;
     private SubscriptionThrottlePolicyDTO burstControlSubscriptionThrottlePolicyDTO2;
-    private String graphQLSchemaDefinition;
     private String graphQLAPIId;
-    private AdminApiTestHelper keyManagerAdminApiTestHelper;
-    private KeyManagerDTO keyManagerDTO;
     private String apiLoggingApiId;
     private String apiLoggingApplicationId;
-    private String customThrottlingPolicyId;
-    private CustomRuleDTO customThrottlingRuleDTO;
-    private AdminApiTestHelper customThrottlingAdminApiTestHelper;
     private static ServerRestartTestCase instance;
 
     public static ServerRestartTestCase getInstance() {
@@ -131,8 +114,10 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @BeforeSuite(alwaysRun = true)
-    public void setEnvironment() throws Exception {
+    public void setEnvironment(ITestContext ctx) throws Exception {
         super.init(userMode);
+
+        String API_VERSION_1_0_0 = "1.0.0";
 
         /*
           populate data for API Throttling Test Case
@@ -176,27 +161,8 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeploymentSync(user.getUserName(), "APIThrottleAPI", "1.0.0",
                 APIMIntegrationConstants.IS_API_EXISTS);
 
-        ArrayList apiThrottleGrantTypes = new ArrayList();
-        apiThrottleGrantTypes.add("client_credentials");
-
-        //get access token
-        ApplicationKeyDTO apiThrottleApplicationKeyDTO = restAPIStore.generateKeys(apiThrottleApplicationId, "3600",
-                null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, apiThrottleGrantTypes);
-        Assert.assertNotNull(apiThrottleApplicationKeyDTO.getToken());
-        String apiThrottleAccessToken = apiThrottleApplicationKeyDTO.getToken().getAccessToken();
-
-        apiThrottleInvokeURL = getAPIInvocationURLHttps("api_throttle");
-        apiThrottleRequestHeaders = new HashMap<>();
-        String apiThrottleTokenJti = TokenUtils.getJtiOfJwtToken(apiThrottleAccessToken);
-        apiThrottleRequestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + apiThrottleTokenJti);
-        log.info("=============================== Headers : " + apiThrottleRequestHeaders);
-        log.info("=============================== invokeURL : " + apiThrottleInvokeURL);
-
-        HttpResponse apiThrottleServiceResponse = HTTPSClientUtils.doGet(apiThrottleInvokeURL + "/1.0.0/test",
-                apiThrottleRequestHeaders);
-        Assert.assertEquals(apiThrottleServiceResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
-
-        log.info("apiId api throttle : " + apiThrottleApiId);
+        ctx.setAttribute("apiThrottleApplicationId", apiThrottleApplicationId);
+        ctx.setAttribute("apiThrottleApiId", apiThrottleApiId);
 
         /*
           populate data for Default Version API Test Case
@@ -215,7 +181,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
                 "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
                 null, defaultVersionGrantTypes);
         Assert.assertNotNull(defaultVersionApplicationKeyDTO.getToken());
-        defaultVersionAccessToken = defaultVersionApplicationKeyDTO.getToken().getAccessToken();
+        String defaultVersionAccessToken = defaultVersionApplicationKeyDTO.getToken().getAccessToken();
 
         String defaultVersionBackendUrl = getGatewayURLNhttp() + "version1";
 
@@ -287,6 +253,9 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         log.info("version : " + defaultVersionHttpResponse1.getHeaders().get("Version"));
         Assert.assertEquals(defaultVersionHttpResponse1.getHeaders().get("Version"), "v1");
 
+        ctx.setAttribute("defaultVersionApiId", defaultVersionApiId);
+        ctx.setAttribute("defaultVersionAccessToken", defaultVersionAccessToken);
+
         /*
           populate data for JWT Revocation Test Case
          */
@@ -306,25 +275,11 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         jwtRevocationApiId = createPublishAndSubscribeToAPIUsingRest(jwtRevocationApiRequest, restAPIPublisher,
                 restAPIStore, jwtRevocationAppId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //Generate production access token
-        ArrayList<String> jwtRevocationGrantTypes = new ArrayList<>();
-        jwtRevocationGrantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO jwtRevocationApplicationKeyDTO = restAPIStore
-                .generateKeys(jwtRevocationAppId, APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, null,
-                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
-                        null, jwtRevocationGrantTypes);
-        Assert.assertNotNull(jwtRevocationApplicationKeyDTO.getToken());
-        jwtRevocationAccessToken = jwtRevocationApplicationKeyDTO.getToken().getAccessToken();
-        jwtRevocationConsumerKey = jwtRevocationApplicationKeyDTO.getConsumerKey();
-        jwtRevocationConsumerSecret = jwtRevocationApplicationKeyDTO.getConsumerSecret();
-
-        jwtRevocationApiInvocationUrl = getAPIInvocationURLHttp("jwtTokenTestAPI/1.0.0/customers/123");
-        jwtRevocationRequestHeaders = new HashMap<>();
-        jwtRevocationRequestHeaders.put("accept", MediaType.TEXT_XML);
-        jwtRevocationRequestHeaders.put("Authorization", "Bearer " + jwtRevocationAccessToken);
-        String API_VERSION_1_0_0 = "1.0.0";
         waitForAPIDeploymentSync(user.getUserName(), "JWTTokenTestAPI", API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        ctx.setAttribute("jwtRevocationAppId", jwtRevocationAppId);
+        ctx.setAttribute("jwtRevocationApiId", jwtRevocationApiId);
 
         /*
           Populate data for API Revision Test Case
@@ -348,6 +303,8 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertTrue(StringUtils.isNotEmpty(apiRevisionApiDto.getData()),
                 "Added Api is not available in APi Publisher. API ID " + apiRevisionApiId);
 
+        ctx.setAttribute("apiRevisionApiId", apiRevisionApiId);
+
         /*
           Populate data for Accessibility of Block API Test Case
          */
@@ -369,21 +326,11 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         accessibilityOfBlockApiId = createPublishAndSubscribeToAPIUsingRest(accessibilityOfBlockApiRequest, restAPIPublisher,
                 restAPIStore, accessibilityOfBlockApplicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        ArrayList accessibilityOfBlockGrantTypes = new ArrayList();
-        accessibilityOfBlockGrantTypes.add("client_credentials");
-
-        //get access token
-        ApplicationKeyDTO accessibilityOfBlockApplicationKeyDTO = restAPIStore.generateKeys(accessibilityOfBlockApplicationId,
-                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
-                null, accessibilityOfBlockGrantTypes);
-        Assert.assertNotNull(accessibilityOfBlockApplicationKeyDTO.getToken());
-        String accessibilityOfBlockAccessToken = accessibilityOfBlockApplicationKeyDTO.getToken().getAccessToken();
-        // Create requestHeaders
-        accessibilityOfBlockRequestHeaders = new HashMap<>();
-        accessibilityOfBlockRequestHeaders.put("accept", "text/xml");
-        accessibilityOfBlockRequestHeaders.put("Authorization", "Bearer " + accessibilityOfBlockAccessToken);
         waitForAPIDeploymentSync(user.getUserName(), "BlockAPITest", API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        ctx.setAttribute("accessibilityOfBlockApplicationId", accessibilityOfBlockApplicationId);
+        ctx.setAttribute("accessibilityOfBlockApiId", accessibilityOfBlockApiId);
 
         /*
           Populate data for JWT Bandwidth Throttling Test Case
@@ -463,12 +410,15 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.changeAPILifeCycleStatus(jwtBandwidthApiId, Constants.PUBLISHED);
         waitForAPIDeploymentSync(user.getUserName(), "BandwidthTestAPI", "1.0.0",
                 APIMIntegrationConstants.IS_API_EXISTS);
-        jwtBandwidthGatewayUrl = getAPIInvocationURLHttps("bandwithtestapi" + "/" + "1.0.0" + "/");
+        String jwtBandwidthGatewayUrl = getAPIInvocationURLHttps("bandwithtestapi" + "/" + "1.0.0" + "/");
 
         // check backend
         Map<String, String> jwtBandwidthRequestHeaders = new HashMap<>();
         HttpResponse jwtBandwidthResponse = HttpRequestUtil.doGet(jwtBandwidthBackendUrl, jwtBandwidthRequestHeaders);
         Assert.assertEquals(jwtBandwidthResponse.getResponseCode(), 200, "Backend (dummy_api.xml) is not up and running");
+
+        ctx.setAttribute("jwtBandwidthApiId", jwtBandwidthApiId);
+        ctx.setAttribute("jwtBandwidthGatewayUrl", jwtBandwidthGatewayUrl);
 
         /*
           Populate data for Burst Control Test Case
@@ -544,12 +494,15 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         burstControlApplicationDTO = restAPIStore.addApplication("APIThrottleBurst-application",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
 
+        ctx.setAttribute("burstControlApplicationDTO", burstControlApplicationDTO);
+        ctx.setAttribute("burstControlApiId", burstControlApiId);
+
         /*
           Populate data for Graphql Test Case
          */
         userManagementClient.addUser("graphqluser", "graphqlUser", new String[]{}, null);
         userManagementClient.addRole("graphqlrole", new String[]{"graphqluser"}, new String[]{});
-        graphQLSchemaDefinition = IOUtils.toString(
+        String graphQLSchemaDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream("graphql" + File.separator + "schema.graphql"),
                 StandardCharsets.UTF_8);
 
@@ -595,10 +548,13 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeploymentSync(user.getUserName(), "CountriesGraphqlAPI", API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
+        ctx.setAttribute("graphQLSchemaDefinition", graphQLSchemaDefinition);
+        ctx.setAttribute("graphQLAPIId", graphQLAPIId);
+
         /*
           Populate data for Key Manager Test Case
          */
-        keyManagerAdminApiTestHelper = new AdminApiTestHelper();
+        AdminApiTestHelper keyManagerAdminApiTestHelper = new AdminApiTestHelper();
         //Create the key manager DTO with Auth0 key manager type with only Mandatory parameters
         List<String> keyManagerAvailableGrantTypes = Collections.emptyList();
         JsonObject keyManagerJsonObject = new JsonObject();
@@ -607,7 +563,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         keyManagerJsonObject.addProperty("audience", "audienceValue");
         keyManagerJsonObject.addProperty("self_validate_jwt", true);
         Object keyManagerAdditionalProperties = new Gson().fromJson(keyManagerJsonObject, Map.class);
-        keyManagerDTO = DtoFactory.createKeyManagerDTO("Auth0KeyManagerOne", null, "Auth0",
+        KeyManagerDTO keyManagerDTO = DtoFactory.createKeyManagerDTO("Auth0KeyManagerOne", null, "Auth0",
                 "Test Key Manager Auth0", "none", null,
                 "https://dev-ted144kt.us.auth0.com/oidc/register", "https://dev-ted144kt.us.auth0.com/oauth/token",
                 "https://dev-ted144kt.us.auth0.com/oauth/revoke", null,
@@ -630,10 +586,13 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
         waitForKeyManagerUnDeployment(user.getUserDomain(), keyManagerDTO.getName());
 
+        ctx.setAttribute("keyManagerDTO", keyManagerDTO);
+        ctx.setAttribute("keyManagerAdminApiTestHelper", keyManagerAdminApiTestHelper);
+
         /*
           Populate Data for Custom Throttling Policy Test Case
          */
-        customThrottlingAdminApiTestHelper = new AdminApiTestHelper();
+        AdminApiTestHelper customThrottlingAdminApiTestHelper = new AdminApiTestHelper();
         //Create the custom throttling policy DTO
         String customThrottlingPolicyName = "TestPolicy";
         String customThrottlingDescription = "This is a test custom throttle policy";
@@ -642,7 +601,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
                 "EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \nSELECT throttleKey, (count(userId) >= 10) " +
                 "as isThrottled, expiryTimeStamp group by throttleKey \nINSERT ALL EVENTS into ResultStream;";
         String customThrottlingKeyTemplate = "$userId";
-        customThrottlingRuleDTO = DtoFactory.createCustomThrottlePolicyDTO(customThrottlingPolicyName, customThrottlingDescription,
+        CustomRuleDTO customThrottlingRuleDTO = DtoFactory.createCustomThrottlePolicyDTO(customThrottlingPolicyName, customThrottlingDescription,
                 false, customThrottlingSiddhiQuery, customThrottlingKeyTemplate);
 
         ApiResponse<CustomRuleDTO> customThrottlingAddedPolicy;
@@ -652,13 +611,17 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         //Assert the status code and policy ID
         Assert.assertEquals(customThrottlingAddedPolicy.getStatusCode(), org.apache.http.HttpStatus.SC_CREATED);
         CustomRuleDTO customThrottlingAddedPolicyDTO = customThrottlingAddedPolicy.getData();
-        customThrottlingPolicyId = customThrottlingAddedPolicyDTO.getPolicyId();
+        String customThrottlingPolicyId = customThrottlingAddedPolicyDTO.getPolicyId();
         Assert.assertNotNull(customThrottlingPolicyId, "The policy ID cannot be null or empty");
 
         customThrottlingRuleDTO.setPolicyId(customThrottlingPolicyId);
         customThrottlingRuleDTO.setIsDeployed(true);
         //Verify the created custom throttling policy DTO
         customThrottlingAdminApiTestHelper.verifyCustomThrottlePolicyDTO(customThrottlingRuleDTO, customThrottlingAddedPolicyDTO);
+
+        ctx.setAttribute("customThrottlingPolicyId", customThrottlingPolicyId);
+        ctx.setAttribute("customThrottlingRuleDTO", customThrottlingRuleDTO);
+        ctx.setAttribute("customThrottlingAdminApiTestHelper", customThrottlingAdminApiTestHelper);
 
         /*
           Populate data for API Logging Test Case
@@ -699,6 +662,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(apiLoggingLoggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + "apiloggingtest" + "/" + "1.0.0" + "\","
                 + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiLoggingApiId + "\"}]}");
 
+        ctx.setAttribute("apiLoggingApplicationId", apiLoggingApplicationId);
         /*
           Call Restart Server function
          */
@@ -791,100 +755,4 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         super.cleanUp();
     }
 
-
-    public String getApiThrottleInvokeURL() {
-        return this.apiThrottleInvokeURL;
-    }
-
-    public Map<String, String> getApiThrottleRequestHeaders() {
-        return this.apiThrottleRequestHeaders;
-    }
-
-    public String getDefaultVersionAccessToken() {
-        return this.defaultVersionAccessToken;
-    }
-
-    public String getDefaultVersionApiId() {
-        return this.defaultVersionApiId;
-    }
-
-    public String getJwtRevocationConsumerKey() {
-        return this.jwtRevocationConsumerKey;
-    }
-
-    public String getJwtRevocationConsumerSecret() {
-        return this.jwtRevocationConsumerSecret;
-    }
-
-    public Map<String, String> getJwtRevocationRequestHeaders() {
-        return this.jwtRevocationRequestHeaders;
-    }
-
-    public String getJwtRevocationApiInvocationUrl() {
-        return this.jwtRevocationApiInvocationUrl;
-    }
-
-    public String getJwtRevocationAccessToken() {
-        return this.jwtRevocationAccessToken;
-    }
-
-    public String getApiRevisionApiId() {
-        return this.apiRevisionApiId;
-    }
-
-    public String getAccessibilityOfBlockApiId() {
-        return this.accessibilityOfBlockApiId;
-    }
-
-    public Map<String, String> getAccessibilityOfBlockRequestHeaders() {
-        return this.accessibilityOfBlockRequestHeaders;
-    }
-
-    public String getJwtBandwidthApiId() {
-        return this.jwtBandwidthApiId;
-    }
-
-    public String getJwtBandwidthGatewayUrl() {
-        return this.jwtBandwidthGatewayUrl;
-    }
-
-    public String getBurstControlApiId() {
-        return this.burstControlApiId;
-    }
-
-    public ApplicationDTO getBurstControlApplicationDTO() {
-        return this.burstControlApplicationDTO;
-    }
-
-    public String getGraphQLAPIId() {
-        return this.graphQLAPIId;
-    }
-
-    public String getGraphQLSchemaDefinition() {
-        return this.graphQLSchemaDefinition;
-    }
-
-    public KeyManagerDTO getKeyManagerDTO() {
-        return this.keyManagerDTO;
-    }
-
-    public AdminApiTestHelper getKeyManagerAdminApiTestHelper() {
-        return this.keyManagerAdminApiTestHelper;
-    }
-
-    public String getApiLoggingApplicationId() {
-        return this.apiLoggingApplicationId;
-    }
-
-    public String getCustomThrottlingPolicyId() {
-        return this.customThrottlingPolicyId;
-    }
-
-    public CustomRuleDTO getCustomThrottlingRuleDTO() {
-        return this.customThrottlingRuleDTO;
-    }
-
-    public AdminApiTestHelper getCustomThrottlingAdminApiTestHelper() {
-        return this.customThrottlingAdminApiTestHelper;
-    }
 }

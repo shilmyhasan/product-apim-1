@@ -23,6 +23,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -37,13 +38,12 @@ import java.util.ArrayList;
 
 public class APILoggingServerRestartTest extends APIManagerLifecycleBaseTest {
 
-    private String applicationId;
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
+    private String apiLoggingApplicationId;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void initialize(ITestContext ctx) throws Exception {
         super.init();
-        applicationId = serverRestartTestCase.getApiLoggingApplicationId();
+        apiLoggingApplicationId = (String) ctx.getAttribute("apiLoggingApplicationId");
     }
 
     @Test(groups = {"wso2.am" }, description = "Sending http request to per API logging enabled API: ")
@@ -56,7 +56,7 @@ public class APILoggingServerRestartTest extends APIManagerLifecycleBaseTest {
         // Invoke the API
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add("client_credentials");
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(apiLoggingApplicationId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         Assert.assertNotNull(applicationKeyDTO.getToken());
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
