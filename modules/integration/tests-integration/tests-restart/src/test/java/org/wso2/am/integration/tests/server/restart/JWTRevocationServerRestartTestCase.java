@@ -44,8 +44,6 @@ import java.util.Map;
 public class JWTRevocationServerRestartTestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(JWTRevocationServerRestartTestCase.class);
     private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
-    private final ServerRestartTestCase serverRestartTestCase = ServerRestartTestCase.getInstance();
-
     private String consumerKey;
     private String consumerSecret;
     private Map<String, String> requestHeaders;

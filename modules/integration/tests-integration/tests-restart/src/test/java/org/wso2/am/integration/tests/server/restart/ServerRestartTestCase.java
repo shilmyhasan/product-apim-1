@@ -52,7 +52,6 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
-import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -88,11 +87,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
     private String graphQLAPIId;
     private String apiLoggingApiId;
     private String apiLoggingApplicationId;
-    private static ServerRestartTestCase instance;
-
-    public static ServerRestartTestCase getInstance() {
-        return instance;
-    }
+    private static final String BASIC_AUTH_HEADER = "admin:admin";
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -102,7 +97,6 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
     @Factory(dataProvider = "userModeDataProvider")
     public ServerRestartTestCase(TestUserMode userMode) {
         this.userMode = userMode;
-        instance = this;
     }
 
     @BeforeSuite(alwaysRun = true)
@@ -620,7 +614,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
          */
         // Get list of APIs without any API
         Map<String, String> apiLoggingHeader = new HashMap<>();
-        byte[] apiLoggingEncodedBytes = Base64.encodeBase64(RESTAPITestConstants.BASIC_AUTH_HEADER
+        byte[] apiLoggingEncodedBytes = Base64.encodeBase64(BASIC_AUTH_HEADER
                 .getBytes(StandardCharsets.UTF_8));
         apiLoggingHeader.put("Authorization", "Basic " + new String(apiLoggingEncodedBytes, StandardCharsets.UTF_8));
         apiLoggingHeader.put("Content-Type", "application/json");
