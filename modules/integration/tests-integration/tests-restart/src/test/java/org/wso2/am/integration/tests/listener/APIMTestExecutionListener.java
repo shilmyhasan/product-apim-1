@@ -23,10 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-import org.wso2.am.integration.tests.workflow.WorkflowApprovalExecutorTest;
 
 public class APIMTestExecutionListener implements ITestListener {
-    private static final Log log = LogFactory.getLog(WorkflowApprovalExecutorTest.class);
+    private static final Log log = LogFactory.getLog(APIMTestExecutionListener.class);
 
     private long startTime;
 

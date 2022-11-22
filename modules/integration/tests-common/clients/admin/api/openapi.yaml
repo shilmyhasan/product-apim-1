@@ -6367,7 +6367,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: string
           description: |
             OK.
             Tenant config Exported Successfully.
