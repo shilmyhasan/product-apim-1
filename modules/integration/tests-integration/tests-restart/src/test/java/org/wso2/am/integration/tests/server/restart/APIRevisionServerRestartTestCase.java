@@ -112,7 +112,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
     @Test(groups = {"wso2.am"}, description = "Check the availability of API Revision in publisher before deploying.",
             dependsOnMethods = "testCreateAPIRevisionWithoutDescription")
     public void testGetAPIRevisions() throws Exception {
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiRevisionApiId,null);
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiRevisionApiId, null);
         Assert.assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
         List<JSONObject> revisionList = new ArrayList<>();
@@ -130,7 +130,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
     @Test(groups = {"wso2.am"}, description = "Check the availability of API Revision in publisher after deploying.",
             dependsOnMethods = "testGetAPIRevisions")
     public void testGetDeployedAPIRevisions() throws Exception {
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiRevisionApiId,"deployed:true");
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiRevisionApiId, "deployed:true");
         Assert.assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
         List<JSONObject> revisionList = new ArrayList<>();
@@ -155,7 +155,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiRevisionApiId, revisionUUID,
-                apiRevisionDeployRequestList,"API");
+                apiRevisionDeployRequestList, "API");
         Assert.assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
     }
@@ -170,7 +170,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(INVALID_API_UUID, revisionUUID,
-                apiRevisionDeployRequestList,"API");
+                apiRevisionDeployRequestList, "API");
         Assert.assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invalid response code for deploying API Revision with invalid API UUID:"
                         + apiRevisionsDeployResponse.getData());
@@ -186,7 +186,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiRevisionApiId, INVALID_REVISION_UUID,
-                apiRevisionDeployRequestList,"API");
+                apiRevisionDeployRequestList, "API");
         Assert.assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invalid response code for deploying API Revision with invalid Revision UUID:"
                         + apiRevisionsDeployResponse.getData());
@@ -202,7 +202,7 @@ public class APIRevisionServerRestartTestCase extends APIManagerLifecycleBaseTes
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiRevisionApiId, revisionUUID,
-                apiRevisionDeployRequestList,"API");
+                apiRevisionDeployRequestList, "API");
         Assert.assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
                 "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
     }

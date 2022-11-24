@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JWTRevocationServerRestartTestCase extends APIManagerLifecycleBaseTest {
-    private static final Log log = LogFactory.getLog(JWTRevocationServerRestartTestCase.class);
+
     private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private String consumerKey;
     private String consumerSecret;
@@ -76,6 +76,9 @@ public class JWTRevocationServerRestartTestCase extends APIManagerLifecycleBaseT
 
     @Test(groups = "wso2.am", description = "testing jwt token revocation")
     public void testJWTTokenRevocation() throws Exception {
+
+        waitForAPIDeploymentSync(user.getUserName(), "JWTTokenTestAPI", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         // Test JWT token validity before revocation
         HttpResponse invocationResponse =

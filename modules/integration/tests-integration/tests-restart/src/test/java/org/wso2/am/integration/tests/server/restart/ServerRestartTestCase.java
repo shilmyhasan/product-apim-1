@@ -147,8 +147,16 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeploymentSync(user.getUserName(), "APIThrottleAPI", "1.0.0",
                 APIMIntegrationConstants.IS_API_EXISTS);
 
-        ctx.setAttribute("apiThrottleApplicationId", apiThrottleApplicationId);
-        ctx.setAttribute("apiThrottleApiId", apiThrottleApiId);
+        ArrayList apiThrottleGrantTypes = new ArrayList();
+        apiThrottleGrantTypes.add("client_credentials");
+
+        //get access token
+        ApplicationKeyDTO apiThrottleApplicationKeyDTO = restAPIStore.generateKeys(apiThrottleApplicationId, "3600",
+                null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, apiThrottleGrantTypes);
+        Assert.assertNotNull(apiThrottleApplicationKeyDTO.getToken());
+        String apiThrottleAccessToken = apiThrottleApplicationKeyDTO.getToken().getAccessToken();
+
+        ctx.setAttribute("apiThrottleAccessToken", apiThrottleAccessToken);
 
         /*
           populate data for Default Version API Test Case
@@ -562,17 +570,10 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         KeyManagerDTO keyManagerAddedKeyManagerDTO = keyManagerAddedKeyManagers.getData();
         String keyManagerId = keyManagerAddedKeyManagerDTO.getId();
         waitForKeyManagerDeployment(user.getUserDomain(), keyManagerDTO.getName());
-        //Assert the status code and key manager ID
-        Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
-        keyManagerDTO.setId(keyManagerId);
-        //Verify the created key manager DTO
-        keyManagerAdminApiTestHelper.verifyKeyManagerAdditionalProperties(keyManagerDTO.getAdditionalProperties(),
-                keyManagerAddedKeyManagerDTO.getAdditionalProperties());
-        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, keyManagerAddedKeyManagerDTO);
-        restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
-        waitForKeyManagerUnDeployment(user.getUserDomain(), keyManagerDTO.getName());
 
+        ctx.setAttribute("keyManagerId", keyManagerId);
         ctx.setAttribute("keyManagerDTO", keyManagerDTO);
+        ctx.setAttribute("keyManagerAddedKeyManagerDTO", keyManagerAddedKeyManagerDTO);
         ctx.setAttribute("keyManagerAdminApiTestHelper", keyManagerAdminApiTestHelper);
 
         /*
@@ -636,6 +637,8 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         apiLoggingApiRequest.setProvider(user.getUserName());
         apiLoggingApiId = createPublishAndSubscribeToAPIUsingRest(apiLoggingApiRequest, restAPIPublisher, restAPIStore,
                 apiLoggingApplicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        waitForAPIDeploymentSync(user.getUserName(), "APILoggingTestAPI", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         // Change logLevel to FULL
         String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";

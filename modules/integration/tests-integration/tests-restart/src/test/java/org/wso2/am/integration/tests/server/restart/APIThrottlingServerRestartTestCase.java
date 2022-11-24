@@ -45,28 +45,23 @@ import java.util.Map;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
 public class APIThrottlingServerRestartTestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(APIThrottlingServerRestartTestCase.class);
-    private String apiThrottleApplicationId;
+    private String apiThrottleAccessToken;
 
     @BeforeClass
     public void initialize(ITestContext ctx) throws Exception {
         super.init();
-        apiThrottleApplicationId = (String) ctx.getAttribute("apiThrottleApplicationId");
+        apiThrottleAccessToken = (String) ctx.getAttribute("apiThrottleAccessToken");
     }
 
     @Test(groups = {"throttling"}, description = "API Throttling Test")
     public void testAPIThrottling_1() throws Exception {
 
-        ArrayList grantTypes = new ArrayList();
-        grantTypes.add("client_credentials");
-
-        //get access token
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(apiThrottleApplicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        Assert.assertNotNull(applicationKeyDTO.getToken());
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        waitForAPIDeploymentSync(user.getUserName(), "APIThrottleAPI", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         String invokeURL = getAPIInvocationURLHttps("api_throttle");
         Map<String, String> requestHeaders = new HashMap<>();
-        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
+        String tokenJti = TokenUtils.getJtiOfJwtToken(apiThrottleAccessToken);
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
         log.info("=============================== Headers : " + requestHeaders);
         log.info("=============================== invokeURL : " + invokeURL);

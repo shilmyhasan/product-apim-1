@@ -90,6 +90,9 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
             "interface types")
     public void createAndPublishGraphQLAPIUsingSchemaWithInterfaces() throws Exception {
 
+        waitForAPIDeploymentSync(user.getUserName(), "CountriesGraphqlAPI", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
+
         String schemaDefinitionWithInterface = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream("graphql" + File.separator
                         + "schemaWithInterface.graphql"), StandardCharsets.UTF_8);

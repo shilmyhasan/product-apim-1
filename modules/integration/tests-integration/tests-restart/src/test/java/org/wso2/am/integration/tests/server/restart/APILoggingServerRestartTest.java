@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.utils.ServerConstants;
 
@@ -52,6 +53,9 @@ public class APILoggingServerRestartTest extends APIManagerLifecycleBaseTest {
         String API_NAME = "APILoggingTestAPI";
         String API_CONTEXT = "apiloggingtest";
         String API_VERSION = "1.0.0";
+
+        waitForAPIDeploymentSync(user.getUserName(), "APILoggingTestAPI", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         // Invoke the API
         ArrayList<String> grantTypes = new ArrayList<>();

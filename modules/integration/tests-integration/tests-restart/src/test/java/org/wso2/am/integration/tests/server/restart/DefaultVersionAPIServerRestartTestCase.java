@@ -61,6 +61,9 @@ public class DefaultVersionAPIServerRestartTestCase extends APIManagerLifecycleB
             "and verify")
     public void createNewVersionWithDefaultVersionOptionAndVerifyDefaultAPIBreaking() throws Exception {
 
+        waitForAPIDeploymentSync(publisherContext.getContextTenant().getContextUser().getUserName(),
+                "DefaultVersionAPI", "1.0.0", APIMIntegrationConstants.IS_API_EXISTS);
+
         String apiVersion = "2.0.0";
         String apiContext = "defaultversion";
         String endpointUrl = getGatewayURLNhttp() + "version2";

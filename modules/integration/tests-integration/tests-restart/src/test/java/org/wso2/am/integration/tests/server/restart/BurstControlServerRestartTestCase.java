@@ -54,6 +54,10 @@ public class BurstControlServerRestartTestCase extends APIManagerLifecycleBaseTe
     @Test(groups = { "wso2.am" }, description = "Test changing the burst limit of an API subscription by subscribing "
             + "to a different subscription policy with different burst limit")
     public void testBurstLimitChange() throws Exception {
+
+        waitForAPIDeploymentSync(user.getUserName(), "APIThrottleBurstAPI", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
+
         //subscribe to API
         String subscriptionTier5RPMburst = "SubscriptionTier5RPMburst";
         SubscriptionDTO subscriptionDTO1 = restAPIStore.subscribeToAPI(burstControlApiId, burstControlApplicationDTO.getApplicationId(),

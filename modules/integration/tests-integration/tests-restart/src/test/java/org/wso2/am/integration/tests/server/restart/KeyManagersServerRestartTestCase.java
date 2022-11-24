@@ -36,17 +36,36 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import java.util.*;
 public class KeyManagersServerRestartTestCase extends APIMIntegrationBaseTest {
 
+    private String keyManagerId;
+    private KeyManagerDTO keyManagerAddedKeyManagerDTO;
     private AdminApiTestHelper keyManagerAdminApiTestHelper;
     private KeyManagerDTO keyManagerDTO;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment(ITestContext ctx) throws Exception {
         super.init();
+        keyManagerId = (String) ctx.getAttribute("keyManagerId");
         keyManagerDTO = (KeyManagerDTO) ctx.getAttribute("keyManagerDTO");
+        keyManagerAddedKeyManagerDTO = (KeyManagerDTO) ctx.getAttribute("keyManagerAddedKeyManagerDTO");
         keyManagerAdminApiTestHelper = (AdminApiTestHelper) ctx.getAttribute("keyManagerAdminApiTestHelper");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type without a mandatory parameter")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type with only mandatory parameters")
+    public void testAddKeyManagerWithAuth0() throws Exception {
+
+        //Assert the status code and key manager ID
+        Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
+        keyManagerDTO.setId(keyManagerId);
+        //Verify the created key manager DTO
+        keyManagerAdminApiTestHelper.verifyKeyManagerAdditionalProperties(keyManagerDTO.getAdditionalProperties(),
+                keyManagerAddedKeyManagerDTO.getAdditionalProperties());
+        keyManagerAdminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, keyManagerAddedKeyManagerDTO);
+        restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
+        waitForKeyManagerUnDeployment(user.getUserDomain(), keyManagerDTO.getName());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type without a mandatory parameter",
+            dependsOnMethods = "testAddKeyManagerWithAuth0")
     public void testAddKeyManagerWithAuth0WithoutMandatoryParam() {
         //Create the key manager DTO with Auth0 key manager type without Connector Configurations (Mandatory parameter)
         String name = "Auth0KeyManagerTwo";

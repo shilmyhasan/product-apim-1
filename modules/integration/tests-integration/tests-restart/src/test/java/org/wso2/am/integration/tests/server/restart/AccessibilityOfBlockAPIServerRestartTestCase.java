@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -53,6 +54,9 @@ public class AccessibilityOfBlockAPIServerRestartTestCase extends APIManagerLife
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before block")
     public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws Exception {
+
+        waitForAPIDeploymentSync(user.getUserName(), "BlockAPITest", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         ArrayList accessibilityOfBlockGrantTypes = new ArrayList();
         accessibilityOfBlockGrantTypes.add("client_credentials");
