@@ -19,8 +19,6 @@
 package org.wso2.am.integration.tests.server.restart;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -546,37 +544,6 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         ctx.setAttribute("graphQLAPIId", graphQLAPIId);
 
         /*
-          Populate data for Key Manager Test Case
-         */
-        AdminApiTestHelper keyManagerAdminApiTestHelper = new AdminApiTestHelper();
-        //Create the key manager DTO with Auth0 key manager type with only Mandatory parameters
-        List<String> keyManagerAvailableGrantTypes = Collections.emptyList();
-        JsonObject keyManagerJsonObject = new JsonObject();
-        keyManagerJsonObject.addProperty("client_id", "clientIdValue");
-        keyManagerJsonObject.addProperty("client_secret", "clientSecretValue");
-        keyManagerJsonObject.addProperty("audience", "audienceValue");
-        keyManagerJsonObject.addProperty("self_validate_jwt", true);
-        Object keyManagerAdditionalProperties = new Gson().fromJson(keyManagerJsonObject, Map.class);
-        KeyManagerDTO keyManagerDTO = DtoFactory.createKeyManagerDTO("Auth0KeyManagerOne", null, "Auth0",
-                "Test Key Manager Auth0", "none", null,
-                "https://dev-ted144kt.us.auth0.com/oidc/register", "https://dev-ted144kt.us.auth0.com/oauth/token",
-                "https://dev-ted144kt.us.auth0.com/oauth/revoke", null,
-                "https://dev-ted144kt.us.auth0.com/authorize", null, "azp",
-                "scope", keyManagerAvailableGrantTypes, keyManagerAdditionalProperties, null);
-
-        //Add the Auth0 key manager
-        ApiResponse<KeyManagerDTO> keyManagerAddedKeyManagers = restAPIAdmin.addKeyManager(keyManagerDTO);
-        Assert.assertEquals(keyManagerAddedKeyManagers.getStatusCode(), org.apache.http.HttpStatus.SC_CREATED);
-        KeyManagerDTO keyManagerAddedKeyManagerDTO = keyManagerAddedKeyManagers.getData();
-        String keyManagerId = keyManagerAddedKeyManagerDTO.getId();
-        waitForKeyManagerDeployment(user.getUserDomain(), keyManagerDTO.getName());
-
-        ctx.setAttribute("keyManagerId", keyManagerId);
-        ctx.setAttribute("keyManagerDTO", keyManagerDTO);
-        ctx.setAttribute("keyManagerAddedKeyManagerDTO", keyManagerAddedKeyManagerDTO);
-        ctx.setAttribute("keyManagerAdminApiTestHelper", keyManagerAdminApiTestHelper);
-
-        /*
           Populate Data for Custom Throttling Policy Test Case
          */
         AdminApiTestHelper customThrottlingAdminApiTestHelper = new AdminApiTestHelper();
@@ -655,6 +622,9 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         /*
           Call Restart Server function
          */
+        Thread.sleep(5000);
+        restartServer();
+        Thread.sleep(5000);
         restartServer();
     }
 
