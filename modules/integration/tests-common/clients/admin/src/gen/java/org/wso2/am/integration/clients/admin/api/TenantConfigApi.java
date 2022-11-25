@@ -109,7 +109,7 @@ public class TenantConfigApi {
     /**
      * Export a tenant-Config.
      * This operation can be used to export a tenant-config.json used in deployment. 
-     * @return Object
+     * @return String
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -120,15 +120,15 @@ public class TenantConfigApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public Object exportTenantConfig() throws ApiException {
-        ApiResponse<Object> localVarResp = exportTenantConfigWithHttpInfo();
+    public String exportTenantConfig() throws ApiException {
+        ApiResponse<String> localVarResp = exportTenantConfigWithHttpInfo();
         return localVarResp.getData();
     }
 
     /**
      * Export a tenant-Config.
      * This operation can be used to export a tenant-config.json used in deployment. 
-     * @return ApiResponse&lt;Object&gt;
+     * @return ApiResponse&lt;String&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -139,9 +139,9 @@ public class TenantConfigApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Object> exportTenantConfigWithHttpInfo() throws ApiException {
+    public ApiResponse<String> exportTenantConfigWithHttpInfo() throws ApiException {
         okhttp3.Call localVarCall = exportTenantConfigValidateBeforeCall(null);
-        Type localVarReturnType = new TypeToken<Object>(){}.getType();
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
@@ -160,10 +160,10 @@ public class TenantConfigApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call exportTenantConfigAsync(final ApiCallback<Object> _callback) throws ApiException {
+    public okhttp3.Call exportTenantConfigAsync(final ApiCallback<String> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = exportTenantConfigValidateBeforeCall(_callback);
-        Type localVarReturnType = new TypeToken<Object>(){}.getType();
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

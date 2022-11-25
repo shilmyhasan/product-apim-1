@@ -19139,6 +19139,7 @@ components:
     Settings:
       example:
         devportalUrl: https://localhost:9443/devportal
+        defaultAdvancePolicy: defaultAdvancePolicy
         externalStoresEnabled: true
         environment:
         - endpointURIs:
@@ -19210,6 +19211,7 @@ components:
             websubHttpsPort: 8021
             httpsPort: 443
         crossTenantSubscriptionEnabled: false
+        defaultSubscriptionPolicy: defaultSubscriptionPolicy
         securityAuditProperties: '{}'
         scopes:
         - apim:api_create
@@ -19259,6 +19261,12 @@ components:
             Is Cross Tenant Subscriptions Enabled
           example: false
           type: boolean
+        defaultAdvancePolicy:
+          description: Default Advance Policy.
+          type: string
+        defaultSubscriptionPolicy:
+          description: Default Subscription Policy.
+          type: string
         authorizationHeader:
           description: Authorization Header
           example: authorization
