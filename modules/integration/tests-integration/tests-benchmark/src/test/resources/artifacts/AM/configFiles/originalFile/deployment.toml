@@ -47,6 +47,23 @@ ws_endpoint = "ws://localhost:9099"
 http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
+[correlation_logs]
+enable=true
+components="http, jdbc, ldap"
+denied_threads="MessageDeliveryTaskThreadPool, HumanTaskServer, BPELServer, CarbonDeploymentSchedulerThread"
+
+[[correlation_logs.component_configs]]
+type="http"
+logAllMethods=true
+
+[[correlation_logs.component_configs]]
+type="jdbc"
+logAllMethods=true
+
+[[correlation_logs.component_configs]]
+type="ldap"
+logAllMethods=true
+
 #[apim.cache.gateway_token]
 #enable = true
 #expiry_time = "15m"
