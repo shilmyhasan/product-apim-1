@@ -302,6 +302,41 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
     }
 
+
+    @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the add header operation policy",
+            dependsOnMethods = "testCreateNewVersionAfterAddingOperationPolicy")
+    public void testAPIInvocationAfterAddingNewMultipleOperationPolicies() throws Exception {
+
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
+        List<OperationPolicyDTO> responsePolicyList = new ArrayList<>();
+        String policyList[] = {"disableChunking", "jsonToXML", "xmlToJson"};
+        String policyName = "addHeader";
+        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
+        Map<String, Object> attributeMap = new HashMap<>();
+        attributeMap.put("headerName", "TestHeader");
+        attributeMap.put("headerValue", "TestValue");
+
+        for (int i = 0; i < 3; i++) {
+            Assert.assertNotNull(policyMap.get(policyList[i]), "Unable to find a common policy with name " + policyList[i]);
+            requestPolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
+            responsePolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
+        }
+
+        requestPolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
+        responsePolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
+        apiOperationPoliciesDTO.setRequest(requestPolicyList);
+        apiOperationPoliciesDTO.setResponse(responsePolicyList);
+        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+
+        restAPIPublisher.updateAPI(apidto);
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
+        assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
