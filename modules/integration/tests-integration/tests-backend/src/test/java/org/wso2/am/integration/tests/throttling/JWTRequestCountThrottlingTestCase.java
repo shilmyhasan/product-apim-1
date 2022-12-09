@@ -291,7 +291,7 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.updateAPI(apidto, apiId);
 
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        String apiRevisionId1 = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -310,10 +310,14 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.updateAPI(apidto, apiId);
 
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        String apiRevisionId2 = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        //Delete created API Revisions
+        restAPIPublisher.deleteAPIRevision(apiId, apiRevisionId1);
+        restAPIPublisher.deleteAPIRevision(apiId, apiRevisionId2);
     }
 
     @Test(groups = {"wso2.am"}, description = "", dependsOnMethods = {"testSubscriptionLevelThrottling",
