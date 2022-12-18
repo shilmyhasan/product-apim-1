@@ -30,6 +30,7 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -69,10 +70,8 @@ import org.wso2.carbon.utils.xml.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -119,6 +118,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private String websocketAPIID;
     String appId;
     String appJWTId;
+    String apiVersion2 = "2.0.0";
+    String endPointApplication = "EndPointApplication";
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -230,8 +231,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, tokenJti, AUTH_IN.HEADER);
-            invokeAPI(client, tokenJti, AUTH_IN.QUERY);
+            invokeAPI(client, tokenJti, AUTH_IN.HEADER, apiEndPoint);
+            invokeAPI(client, tokenJti, AUTH_IN.QUERY, apiEndPoint);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -264,8 +265,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         //consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, accessToken, AUTH_IN.HEADER);
-            invokeAPI(client, accessToken, AUTH_IN.QUERY);
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, apiEndPoint);
+            invokeAPI(client, accessToken, AUTH_IN.QUERY, apiEndPoint);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -273,6 +274,91 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             client.stop();
         }
     }
+
+    @Test(description = "Invoke API with only the sandbox endpoint configured",
+            dependsOnMethods = "testWebSocketAPIInvocationWithJWTToken")
+    public void testWebSocketAPIRemoveEndpoint() throws Exception {
+
+        HttpResponse response = restAPIPublisher.copyAPI(apiVersion2, websocketAPIID, false);
+        String websocketAPIID = response.getData();
+        createAPIRevisionAndDeployUsingRest(websocketAPIID, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatus(websocketAPIID, APILifeCycleAction.PUBLISH.getAction(), null);
+        waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion2, APIMIntegrationConstants.IS_API_EXISTS);
+
+        Gson g = new Gson();
+        HttpResponse getApiResponse = restAPIPublisher.getAPI(websocketAPIID);
+        APIDTO apidto = g.fromJson(getApiResponse.getData(), APIDTO.class);
+        URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
+        String endPointString = "{\n" +
+                "  \"sandbox_endpoints\": {\n" +
+                "    \"url\": \"" + endpointUri + "\",\n" +
+                "    \"config\": null,\n" +
+                "    \"template_not_supported\": false\n" +
+                "  },\n" +
+                "  \"endpoint_type\": \"http\"\n" +
+                "}";
+        JSONParser parser = new JSONParser();
+        org.json.simple.JSONObject endpoint = (org.json.simple.JSONObject) parser.parse(endPointString);
+        apidto.setEndpointConfig(endpoint);
+        restAPIPublisher.updateAPI(apidto);
+        createAPIRevisionAndDeployUsingRest(websocketAPIID, restAPIPublisher);
+        waitForAPIDeployment();
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiVersion2,
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        HttpResponse applicationResponse = restAPIStore.createApplication(endPointApplication, "",
+                                                                          APIMIntegrationConstants.API_TIER.UNLIMITED,
+                                                                          ApplicationDTO.TokenTypeEnum.OAUTH);
+        String appId = applicationResponse.getData();
+        restAPIStore.subscribeToAPI(websocketAPIID, appId, APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
+
+        String apiEndPoint = null;
+        if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode) || TestUserMode.SUPER_TENANT_USER.equals(userMode)) {
+            apiEndPoint = getWebSocketAPIInvocationURL(apiRequest.getContext(), apiVersion2);
+        } else {
+            apiEndPoint = getWebSocketTenantAPIInvocationURL(apiRequest.getContext(), apiVersion2, user.getUserDomain());
+        }
+        
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO sandboxApplicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
+                                                                               ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX,
+                                                                               null, grantTypes);
+        String sandboxAccessToken = sandboxApplicationKeyDTO.getToken().getAccessToken();
+
+        WebSocketClient client0 = new WebSocketClient();
+        try {
+            invokeAPI(client0, sandboxAccessToken, AUTH_IN.HEADER, apiEndPoint);
+            invokeAPI(client0, sandboxAccessToken, AUTH_IN.QUERY, apiEndPoint);
+            Assert.assertTrue(true, "Client can connect to the sandbox endpoint");
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client0.stop();
+        }
+
+        ApplicationKeyDTO prodApplicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
+                                                                            ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                                                                            null, grantTypes);
+        String prodAccessToken = prodApplicationKeyDTO.getToken().getAccessToken();
+        WebSocketClient client1 = new WebSocketClient();
+        try {
+            invokeAPI(client1, prodAccessToken, AUTH_IN.QUERY, apiEndPoint);
+            Assert.fail("Client can connect to the production endpoint when production endpoint is not configured");
+        } catch (Exception e) {
+            log.debug("Exception in connecting to server", e);
+        } finally {
+            client1.stop();
+        }
+
+        undeployAndDeleteAPIRevisionsUsingRest(websocketAPIID, restAPIPublisher);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiVersion2,
+                                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
+    }
+
     @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
     public void testWebSocketAPIThrottling() throws Exception {
             // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
@@ -359,7 +445,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, "00000000-0000-0000-0000-000000000000", AUTH_IN.HEADER);
+            invokeAPI(client, "00000000-0000-0000-0000-000000000000", AUTH_IN.HEADER, apiEndPoint);
         } catch (APIManagerIntegrationTestException e) {
             log.error("Exception in connecting to server", e);
             assertTrue(true, "Client cannot connect to server");
@@ -478,10 +564,12 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      *
      * @param client      WebSocketClient object
      * @param accessToken API access Token
-     * @param in location of the Auth header. {@code query} or {@code header}
+     * @param in          location of the Auth header. {@code query} or {@code header}
+     * @param apiEndPoint Endpoint URI
      * @throws Exception If an error occurs while invoking WebSocket API
      */
-    private void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in) throws Exception {
+    private void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in, String apiEndPoint)
+            throws Exception {
 
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
@@ -499,6 +587,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             socket.sendMessage(testMessage);
             waitForReply(socket);
+            if (StringUtils.isEmpty(socket.getResponseMessage())) {
+                throw new APIManagerIntegrationTestException("Unable to create client connection");
+            }
             assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), false,
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), testMessage.toUpperCase(),
