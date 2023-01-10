@@ -4,7 +4,7 @@
 {% else %}
         <eventPublisher name="tokenRevocationJMSPublisher2" statistics="disable" processing="disable"
 {% endif %}
-                trace="disable" xmlns="http://wso2.org/carbon/eventpublisher">
+        trace="disable" xmlns="http://wso2.org/carbon/eventpublisher">
   <from streamName="org.wso2.apimgt.token.revocation.stream" version="1.0.0"/>
   <mapping customMapping="disable" type="json"/>
   <to eventAdapterType="jms">
