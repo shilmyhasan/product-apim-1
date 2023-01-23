@@ -191,6 +191,7 @@ public class RestAPIStoreImpl {
     public HttpResponse createApplication(String appName, String description, String throttleTier,
                                           ApplicationDTO.TokenTypeEnum tokenType) throws APIManagerIntegrationTestException {
         try {
+            setActivityID();
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
             application.setDescription(description);
@@ -422,6 +423,7 @@ public class RestAPIStoreImpl {
                                           ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
                                           List<String> grantTypes)
             throws ApiException, APIManagerIntegrationTestException {
+        setActivityID();
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
         applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
