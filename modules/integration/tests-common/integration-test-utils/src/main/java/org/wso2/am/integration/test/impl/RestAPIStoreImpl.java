@@ -292,7 +292,6 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse deleteApplicationWithHttpResponse(String applicationId) {
-
         try {
             ApiResponse<Void> deleteResponse = applicationsApi.applicationsApplicationIdDeleteWithHttpInfo(applicationId, null);
             return new HttpResponse(applicationId, deleteResponse.getStatusCode());
