@@ -64,6 +64,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     private String appId;
     private String oauthTokenTestAppId;
     private String infiniteTokenTestAppId;
+    private String expiredRefreshTokenTestAppId;
     private String gatewayUrl;
     private String consumerKey;
     private String consumerSecret;
@@ -306,8 +307,49 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         assertTrue(youTubeResponse.getData().contains("<Customer>"), "Response data mismatched");
     }
 
-    @Test(groups = { "wso2.am" }, description = "Infinite Token API Test other", dependsOnMethods = {
+    @Test(groups = {"wso2.am"}, description = "Test Refresh token functionality", dependsOnMethods = {
             "testOauthTokenAPITestCase" })
+    public void testRefreshTokenExpiryTestCase() throws Exception {
+
+        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("refreshTokenExpiryTestAPI-Application",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "test app for expired refresh Token API invocation",
+                "JWT");
+        expiredRefreshTokenTestAppId = applicationDTO.getApplicationId();
+
+        SubscriptionDTO subscriptionDTO = restAPIStore
+                .subscribeToAPI(apiId, expiredRefreshTokenTestAppId, APIMIntegrationConstants.API_TIER.GOLD);
+        Assert.assertEquals(true, subscriptionDTO.getThrottlingPolicy().equals("Gold"));
+
+        // Set a large value for the application token expiry time
+        Map<String, Object> additionalProperties = new HashMap<>();
+        additionalProperties.put("application_access_token_expiry_time", "360000");
+        // Generate a sandbox token and invoke with that
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        // Generate a sandbox token and invoke with that
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(expiredRefreshTokenTestAppId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, null, grantTypes, additionalProperties, null);
+        String sandboxAccessToken = applicationKeyDTO.getToken().getAccessToken();
+        Map<String, String> requestHeadersSandBox = new HashMap<>();
+        requestHeadersSandBox.put("Authorization", "Bearer " + sandboxAccessToken);
+        requestHeadersSandBox.put("accept", "text/xml");
+        HttpResponse youTubeResponseSandBox = HttpRequestUtil.doGet(gatewayUrl, requestHeadersSandBox);
+        log.info("Response " + youTubeResponseSandBox);
+        assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
+
+        //wait for expiration time of refresh token
+        Thread.sleep(3700);
+
+        //verify whether still getting the intended response
+        youTubeResponseSandBox = HttpRequestUtil.doGet(gatewayUrl, requestHeadersSandBox);
+        log.info("Response " + youTubeResponseSandBox);
+        assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Infinite Token API Test other", dependsOnMethods = {
+            "testRefreshTokenExpiryTestCase" })
     public void testInfiniteTokenAPITestCase() throws Exception {
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("infiniteTokenTestAPI-Application",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "test app for Infinite Token API invocation",
@@ -368,6 +410,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(appId);
         restAPIStore.deleteApplication(oauthTokenTestAppId);
         restAPIStore.deleteApplication(infiniteTokenTestAppId);
+        restAPIStore.deleteApplication(expiredRefreshTokenTestAppId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
