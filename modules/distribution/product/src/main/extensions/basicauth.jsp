@@ -31,6 +31,7 @@
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isSelfSignUpEPAvailable" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isRecoveryEPAvailable" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isEmailUsernameEnabled" %>
+<%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isEmailUsernameValidationDisabled" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.getServerURL" %>
 <%@ page import="org.apache.commons.codec.binary.Base64" %>
 <%@ page import="org.apache.commons.text.StringEscapeUtils" %>
@@ -50,6 +51,17 @@
         isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
     } else {
         isEmailUsernameEnabled = isEmailUsernameEnabled();
+    }
+%>
+
+<%
+    String emailUsernameValidationDisable = application.getInitParameter("DisableEmailUserNameValidation");
+    Boolean isEmailUsernameValidationDisabled = false;
+
+    if (StringUtils.isNotBlank(emailUsernameValidationDisable)) {
+        isEmailUsernameValidationDisabled = Boolean.valueOf(emailUsernameValidationDisable);
+    } else {
+        isEmailUsernameValidationDisabled = isEmailUsernameValidationDisabled();
     }
 %>
 
@@ -78,6 +90,7 @@
                     e.preventDefault();
 
                     var isEmailUsernameEnabled = JSON.parse("<%= isEmailUsernameEnabled %>");
+                    var isEmailUsernameValidationDisabled = JSON.parse("<%= isEmailUsernameValidationDisabled %>");
                     var tenantName = getParameterByName("tenantDomain");
                     var userName = document.getElementById("username");
                     var usernameUserInput = document.getElementById("usernameUserInput");
@@ -87,7 +100,7 @@
 
                         if (tenantName && tenantName !== "null") {
 
-                            if (isEmailUsernameEnabled) {
+                            if (isEmailUsernameEnabled && !isEmailUsernameValidationDisabled) {
 
                                 if (usernameUserInputValue.split("@").length <= 1) {
                                     var errorMessage = document.getElementById("error-msg");
