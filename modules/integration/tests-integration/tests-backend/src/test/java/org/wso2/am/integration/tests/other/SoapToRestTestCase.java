@@ -201,11 +201,17 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         String inSequence = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
                 "artifacts" + File.separator + "AM" + File.separator + "soap" + File.separator
                         + "in-sequence-check-phone-numbers.xml"), "UTF-8");
+        String inSequenceOrdered = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
+                "artifacts" + File.separator + "AM" + File.separator + "soap" + File.separator
+                        + "in-sequence-check-phone-numbers-ordered.xml"), "UTF-8");
         ResourcePolicyListDTO resourcePolicyInListDTO = restAPIPublisher
                 .getApiResourcePolicies(soapToRestAPIId, "in", "checkPhoneNumbers", "post");
         resourcePoliciesIn = resourcePolicyInListDTO.getList();
         resourcePoliciesIn.forEach((item) -> {
-            assertEquals(item.getContent(), inSequence, "Invalid In-Sequence");
+            // Since parameter order is not guaranteed as the used json objects does not preserve the order,
+            // output can be from either of the two sequences.
+            boolean equals = inSequence.equals(item.getContent()) || inSequenceOrdered.equals(item.getContent());
+            assertEquals(equals, true, "Invalid In-Sequence");
         });
 
         // Validate out-sequence
@@ -484,6 +490,9 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         String updatedInSequence = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
                 "artifacts" + File.separator + "AM" + File.separator + "soap" + File.separator
                         + "updated-in-sequence-check-phone-numbers.xml"), "UTF-8");
+        String updatedInSequenceOrdered = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
+                "artifacts" + File.separator + "AM" + File.separator + "soap" + File.separator
+                        + "updated-in-sequence-check-phone-numbers-ordered.xml"), "UTF-8");
         resourcePoliciesIn.forEach((item) -> {
             ResourcePolicyInfoDTO updatedResourcePoliciesIn = null;
             item.setContent(updatedInSequence);
@@ -493,7 +502,11 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
             } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
                 log.error(e.getMessage());
             }
-            assertEquals(updatedResourcePoliciesIn.getContent(), updatedInSequence, "In-Sequence not updated");
+            // Since parameter order is not guaranteed as the used json objects does not preserve the order,
+            // output can be from either of the two sequences.
+            boolean equals = updatedInSequence.equals(updatedResourcePoliciesIn.getContent())
+                    || updatedInSequenceOrdered.equals(updatedResourcePoliciesIn.getContent());
+            assertEquals(equals, true, "In-Sequence not updated");
         });
 
         // Update out-sequence
