@@ -198,6 +198,99 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         assertNotEquals(updatedSwagger, oldSwagger, "Modifying resources failed for API");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Update an API with AWS resource details",
+            dependsOnMethods = "testSetScopeToResourceTestCase")
+    public void testUpdateAPIWithAWSResourceDetailsTestCase() throws Exception {
+
+        // This test case was written to cover resources with AWS resource details and
+        // handling swagger API definitions with large doubles.
+        String oldSwagger = restAPIPublisher.getSwaggerByID(apiId);
+        // resource are modified by using swagger doc. create the swagger doc with modified information.
+        String modifiedResource = "{\n"
+                + "   \"openapi\":\"3.0.1\",\n"
+                + "   \"info\":{\n"
+                + "      \"title\":\"testAWSARN\",\n"
+                + "      \"version\":\"1.0.0\"\n"
+                + "   },\n"
+                + "   \"servers\":[\n"
+                + "      {\n"
+                + "         \"url\":\"/\"\n"
+                + "      }\n"
+                + "   ],\n"
+                + "   \"security\":[\n"
+                + "      {\n"
+                + "         \"default\":[\n"
+                + "            \n"
+                + "         ]\n"
+                + "      }\n"
+                + "   ],\n"
+                + "   \"paths\":{\n"
+                + "      \"/test\":{\n"
+                + "         \"get\":{\n"
+                + "            \"parameters\":[\n"
+                + "               {\n"
+                + "                  \"name\":\"testParameter\",\n"
+                + "                  \"in\":\"query\",\n"
+                + "                  \"required\":true,\n"
+                + "                  \"style\":\"form\",\n"
+                + "                  \"explode\":true,\n"
+                + "                  \"schema\":{\n"
+                + "                     \"maximum\":9223372036854776000,\n"
+                + "                     \"minimum\":1,\n"
+                + "                     \"type\":\"number\",\n"
+                + "                     \"description\":\"Test large maximum values\",\n"
+                + "                     \"format\":\"double\",\n"
+                + "                     \"example\":12000\n"
+                + "                  }\n"
+                + "               }\n"
+                + "            ],\n"
+                + "            \"responses\":{\n"
+                + "               \"200\":{\n"
+                + "                  \"description\":\"ok\"\n"
+                + "               }\n"
+                + "            },\n"
+                + "            \"security\":[\n"
+                + "               {\n"
+                + "                  \"default\":[\n"
+                + "                     \n"
+                + "                  ]\n"
+                + "               }\n"
+                + "            ],\n"
+                + "            \"x-auth-type\":\"Application & Application User\",\n"
+                + "            \"x-amzn-resource-name\":\"testARN\",\n"
+                + "            \"x-amzn-resource-timeout\":230000\n"
+                + "         }\n"
+                + "      }\n"
+                + "   },\n"
+                + "   \"components\":{\n"
+                + "      \"securitySchemes\":{\n"
+                + "         \"default\":{\n"
+                + "            \"type\":\"oauth2\",\n"
+                + "            \"flows\":{\n"
+                + "               \"implicit\":{\n"
+                + "                  \"authorizationUrl\":\"https://test.com\",\n"
+                + "                  \"scopes\":{\n"
+                + "                     \n"
+                + "                  }\n"
+                + "               }\n"
+                + "            }\n"
+                + "         }\n"
+                + "      }\n"
+                + "   }\n"
+                + "}";
+        String swaggerResponse = restAPIPublisher.updateSwagger(apiId, modifiedResource);
+        assertNotNull(swaggerResponse);
+        String updatedSwagger = restAPIPublisher.getSwaggerByID(apiId);
+        Assert.assertNotEquals(updatedSwagger, oldSwagger,
+                "Modifying resources with AWS Resource details failed for API");
+        boolean updatedSwaggerContainsARName = updatedSwagger.contains("x-amzn-resource-name") &&
+                updatedSwagger.contains("testARN");
+        boolean updatedSwaggerContainsARTimeout = updatedSwagger.contains("x-amzn-resource-timeout") &&
+                updatedSwagger.contains("230000");
+        Assert.assertTrue(updatedSwaggerContainsARName, "Updated Swagger does not contain AWS resource name");
+        Assert.assertTrue(updatedSwaggerContainsARTimeout, "Updated Swagger does not contain AWS resource timeout");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
