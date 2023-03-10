@@ -32,6 +32,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import javax.ws.rs.core.Response;
 import java.net.URL;
 
+import static org.testng.Assert.assertTrue;
 import static org.junit.Assert.assertNotEquals;
 import static org.testng.Assert.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
@@ -281,14 +282,14 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         String swaggerResponse = restAPIPublisher.updateSwagger(apiId, modifiedResource);
         assertNotNull(swaggerResponse);
         String updatedSwagger = restAPIPublisher.getSwaggerByID(apiId);
-        Assert.assertNotEquals(updatedSwagger, oldSwagger,
+        assertNotEquals(updatedSwagger, oldSwagger,
                 "Modifying resources with AWS Resource details failed for API");
         boolean updatedSwaggerContainsARName = updatedSwagger.contains("x-amzn-resource-name") &&
                 updatedSwagger.contains("testARN");
         boolean updatedSwaggerContainsARTimeout = updatedSwagger.contains("x-amzn-resource-timeout") &&
                 updatedSwagger.contains("230000");
-        Assert.assertTrue(updatedSwaggerContainsARName, "Updated Swagger does not contain AWS resource name");
-        Assert.assertTrue(updatedSwaggerContainsARTimeout, "Updated Swagger does not contain AWS resource timeout");
+        assertTrue(updatedSwaggerContainsARName, "Updated Swagger does not contain AWS resource name");
+        assertTrue(updatedSwaggerContainsARTimeout, "Updated Swagger does not contain AWS resource timeout");
     }
 
     @AfterClass(alwaysRun = true)
