@@ -23,7 +23,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.testng.Assert;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
@@ -543,7 +546,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.deleteAPI(apiId);
         try {
             resourceAdminServiceClient.getResourceData(API_TRACES_LOCATION);
-            Assert.fail("The resource should not be accessible");
+            fail("The resource should not be accessible");
         } catch (org.apache.axis2.AxisFault e) {
             assertTrue(e.getMessage().contains("Resource does not exist at path"));
         }

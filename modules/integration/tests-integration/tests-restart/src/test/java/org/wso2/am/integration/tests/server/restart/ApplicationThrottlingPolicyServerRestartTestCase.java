@@ -18,7 +18,11 @@
 package org.wso2.am.integration.tests.server.restart;
 
 import org.apache.http.HttpStatus;
-import org.testng.Assert;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.fail;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -54,11 +58,11 @@ public class ApplicationThrottlingPolicyServerRestartTestCase extends APIMIntegr
         ApiResponse<ApplicationThrottlePolicyDTO> applicationThrottlePolicyDTOApiResponse =
                 restAPIAdmin.addApplicationThrottlingPolicy(applicationThrottlePolicyDTO);
 
-        Assert.assertEquals(applicationThrottlePolicyDTOApiResponse.getStatusCode(), 201);
+        assertEquals(applicationThrottlePolicyDTOApiResponse.getStatusCode(), 201);
         this.defaultApplicationThrottlePolicyDTO = applicationThrottlePolicyDTOApiResponse.getData();
 
         policyId = defaultApplicationThrottlePolicyDTO.getPolicyId();
-        Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
+        assertNotNull(policyId, "The policy ID cannot be null or empty");
 
     }
 
@@ -68,7 +72,7 @@ public class ApplicationThrottlingPolicyServerRestartTestCase extends APIMIntegr
         ApiResponse<ApplicationThrottlePolicyDTO> retrievedPolicy =
                 restAPIAdmin.getApplicationThrottlingPolicy(policyId);
         ApplicationThrottlePolicyDTO retrievedPolicyDTO = retrievedPolicy.getData();
-        Assert.assertEquals(retrievedPolicy.getStatusCode(), HttpStatus.SC_OK);
+        assertEquals(retrievedPolicy.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the retrieved application throttling policy DTO
         adminApiTestHelper.verifyApplicationThrottlePolicyDTO(defaultApplicationThrottlePolicyDTO, retrievedPolicyDTO);
@@ -80,15 +84,15 @@ public class ApplicationThrottlingPolicyServerRestartTestCase extends APIMIntegr
     public void testRestartAfterDeletePolicy() throws Exception {
 
         ApiResponse<Void> apiResponse = restAPIAdmin.deleteApplicationThrottlingPolicy(policyId);
-        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         Thread.sleep(5000);
         restartServer();
         ApiResponse<ApplicationThrottlePolicyDTO> retrievedPolicy = null;
         try {
              retrievedPolicy = restAPIAdmin.getApplicationThrottlingPolicy(policyId);
-            Assert.fail("The policy should not be visible after deleting");
+             fail("The policy should not be visible after deleting");
         } catch (ApiException e) {
-            Assert.assertNull(retrievedPolicy, "Response should not contain the deleted policy");
+            assertNull(retrievedPolicy, "Response should not contain the deleted policy");
         }
     }
 
