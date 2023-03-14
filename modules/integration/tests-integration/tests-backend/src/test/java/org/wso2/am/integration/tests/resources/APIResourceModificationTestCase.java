@@ -33,9 +33,9 @@ import javax.ws.rs.core.Response;
 import java.net.URL;
 
 import static org.testng.Assert.assertTrue;
-import static org.junit.Assert.assertNotEquals;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertEquals;
-import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.Assert.assertNotNull;
 
 
 public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
@@ -199,8 +199,8 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         assertNotEquals(updatedSwagger, oldSwagger, "Modifying resources failed for API");
     }
 
-//    @Test(groups = {"wso2.am"}, description = "Update an API with AWS resource details",
-//            dependsOnMethods = "testSetScopeToResourceTestCase")
+    @Test(groups = {"wso2.am"}, description = "Update an API with AWS resource details",
+            dependsOnMethods = "testSetScopeToResourceTestCase")
     public void testUpdateAPIWithAWSResourceDetailsTestCase() throws Exception {
 
         // This test case was written to cover resources with AWS resource details and
