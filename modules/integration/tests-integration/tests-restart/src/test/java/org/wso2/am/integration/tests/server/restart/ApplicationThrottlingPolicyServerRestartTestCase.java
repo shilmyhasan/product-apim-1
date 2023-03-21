@@ -89,8 +89,8 @@ public class ApplicationThrottlingPolicyServerRestartTestCase extends APIMIntegr
         restartServer();
         ApiResponse<ApplicationThrottlePolicyDTO> retrievedPolicy = null;
         try {
-             retrievedPolicy = restAPIAdmin.getApplicationThrottlingPolicy(policyId);
-             fail("The policy should not be visible after deleting");
+            retrievedPolicy = restAPIAdmin.getApplicationThrottlingPolicy(policyId);
+            fail("The policy should not be visible after deleting");
         } catch (ApiException e) {
             assertNull(retrievedPolicy, "Response should not contain the deleted policy");
         }
