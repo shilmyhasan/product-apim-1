@@ -23,6 +23,8 @@ package org.wso2.am.integration.tests.other;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.gson.Gson;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -56,16 +58,18 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.ws.rs.core.Response;
+import javax.xml.stream.StreamFilter;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -204,14 +208,22 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         String inSequenceOrdered = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
                 "artifacts" + File.separator + "AM" + File.separator + "soap" + File.separator
                         + "in-sequence-check-phone-numbers-ordered.xml"), "UTF-8");
+        String inSequenceRandomOrderedElement = buildOMElement(inSequence).toString();
+        String inSequenceOrderedElement = buildOMElement(inSequenceOrdered).toString();
         ResourcePolicyListDTO resourcePolicyInListDTO = restAPIPublisher
                 .getApiResourcePolicies(soapToRestAPIId, "in", "checkPhoneNumbers", "post");
         resourcePoliciesIn = resourcePolicyInListDTO.getList();
         resourcePoliciesIn.forEach((item) -> {
             // Since parameter order is not guaranteed as the used json objects does not preserve the order,
             // output can be from either of the two sequences.
-            boolean equals = inSequence.equals(item.getContent()) || inSequenceOrdered.equals(item.getContent());
-            assertEquals(equals, true, "Invalid In-Sequence");
+            try {
+                String itemElement = buildOMElement(item.getContent()).toString();
+                boolean equals = inSequenceRandomOrderedElement.equals(itemElement)
+                        || inSequenceOrderedElement.equals(itemElement);
+                assertEquals(equals, true, "Invalid In-Sequence");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         });
 
         // Validate out-sequence
@@ -493,6 +505,8 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         String updatedInSequenceOrdered = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
                 "artifacts" + File.separator + "AM" + File.separator + "soap" + File.separator
                         + "updated-in-sequence-check-phone-numbers-ordered.xml"), "UTF-8");
+        String inSequenceRandomOrderedElement = buildOMElement(updatedInSequence).toString();
+        String inSequenceOrderedElement = buildOMElement(updatedInSequenceOrdered).toString();
         resourcePoliciesIn.forEach((item) -> {
             ResourcePolicyInfoDTO updatedResourcePoliciesIn = null;
             item.setContent(updatedInSequence);
@@ -504,9 +518,14 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
             }
             // Since parameter order is not guaranteed as the used json objects does not preserve the order,
             // output can be from either of the two sequences.
-            boolean equals = updatedInSequence.equals(updatedResourcePoliciesIn.getContent())
-                    || updatedInSequenceOrdered.equals(updatedResourcePoliciesIn.getContent());
-            assertEquals(equals, true, "In-Sequence not updated");
+            try {
+                String itemElement = buildOMElement(updatedResourcePoliciesIn.getContent()).toString();
+                boolean equals = inSequenceRandomOrderedElement.equals(itemElement)
+                        || inSequenceOrderedElement.equals(itemElement);
+                assertEquals(equals, true, "In-Sequence not updated");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         });
 
         // Update out-sequence
@@ -618,6 +637,30 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(soapToRestAPIId);
         wireMockServer.stop();
         super.cleanUp();
+    }
+
+    public static OMElement buildOMElement(String xml) throws Exception {
+        String closedXml = "<root>" + xml + "</root>";
+        InputStream stream = new ByteArrayInputStream(closedXml.getBytes());
+        XMLStreamReader parser;
+        StAXOMBuilder builder;
+        try {
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+            parser = factory.createXMLStreamReader(stream);
+            XMLStreamReader filteredReader = factory.createFilteredReader(parser, new StreamFilter() {
+                        public boolean accept(XMLStreamReader r) {
+                            return !r.isWhiteSpace();
+                        }
+                    });
+            builder = new StAXOMBuilder(filteredReader);
+        } catch (XMLStreamException e) {
+            String msg = "Error in initializing the parser.";
+            log.error(msg, e);
+            throw new Exception(msg, e);
+        }
+
+        return builder.getDocumentElement();
     }
 }
 
