@@ -337,8 +337,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
     }
 
-//    @Test(groups = {"wso2.am"}, description = "Add API specific operation policy using YAML Policy Definition",
-//            dependsOnMethods = "testAPIInvocationAfterAddingNewMultipleOperationPolicies")
+    @Test(groups = {"wso2.am"}, description = "Add API specific operation policy using YAML Policy Definition",
+            dependsOnMethods = "testAPIInvocationAfterAddingNewMultipleOperationPolicies")
     public void testAddAPISpecificOperationPolicyYAML() throws Exception {
 
         HttpResponse addPolicyResponse =
@@ -358,8 +358,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         policyMap.put("customAPISpecificLogPolicyYAML", newPolicyId);
     }
 
-//    @Test(groups = {"wso2.am"}, description = "Delete API specific operation policy created using YAML Policy Definition",
-//            dependsOnMethods = "testAddAPISpecificOperationPolicyYAML")
+    @Test(groups = {"wso2.am"}, description = "Delete API specific operation policy created using YAML Policy Definition",
+            dependsOnMethods = "testAddAPISpecificOperationPolicyYAML")
     public void testDeleteAPISpecificOperationPolicyYAML() throws Exception {
 
         int responseCode = deleteOperationPolicy(policyMap.get("customAPISpecificLogPolicyYAML"), apiId);
@@ -369,8 +369,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         policyMap.remove("customAPISpecificLogPolicyYAML");
     }
 
-//    @Test(groups = {"wso2.am"}, description = "Add common operation policy using YAML specification file",
-//            dependsOnMethods = "testDeleteAPISpecificOperationPolicyYAML")
+    @Test(groups = {"wso2.am"}, description = "Add common operation policy using YAML specification file",
+            dependsOnMethods = "testDeleteAPISpecificOperationPolicyYAML")
     public void testAddNewCommonOperationPolicyYAML() throws Exception {
 
         HttpResponse addPolicyResponse = addPolicy(null,
@@ -390,8 +390,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         policyMap.put("customCommonLogPolicyYAML", newPolicyId);
     }
 
-//    @Test(groups = {"wso2.am"}, description = "Delete common operation policy created using YAML specification file",
-//            dependsOnMethods = "testAddNewCommonOperationPolicyYAML")
+    @Test(groups = {"wso2.am"}, description = "Delete common operation policy created using YAML specification file",
+            dependsOnMethods = "testAddNewCommonOperationPolicyYAML")
     public void testDeleteCommonOperationPolicyYAML() throws Exception {
 
         int responseCode = deleteOperationPolicy(policyMap.get("customCommonLogPolicyYAML"), null);
