@@ -1,7 +1,3 @@
-package org.wso2.am.integration.tests.throttling;
-
-import java.util.Calendar;
-
 /*
  *Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
@@ -19,6 +15,11 @@ import java.util.Calendar;
  *specific language governing permissions and limitations
  *under the License.
  */
+
+package org.wso2.am.integration.tests.throttling;
+
+import java.util.Calendar;
+
 public class ThrottlingUtils {
     public static int WAIT_FOR_JMS_THROTTLE_EVENT_IN_MILLISECONDS = 3000;
 
@@ -34,7 +35,7 @@ public class ThrottlingUtils {
         }
     }
 
-    public static int getTimeToNextHourInMinutes() {
+    private static int getTimeToNextHourInMinutes() {
         Calendar calendar = Calendar.getInstance();
         int minutesInTime = calendar.get(Calendar.MINUTE);
         return 60 - minutesInTime;
