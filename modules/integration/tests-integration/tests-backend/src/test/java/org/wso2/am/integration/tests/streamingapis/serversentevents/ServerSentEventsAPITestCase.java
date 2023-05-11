@@ -354,11 +354,13 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
             @Override
             public void run() {
                 try {
-                    sseServer.start();
-                    log.info("SSE Server Started and will be stopped after: " + stopAfterMillis + "ms.");
-                    Thread.sleep(stopAfterMillis);
-                    sseServer.stop();
-                    log.info("SSE Server Stopped.");
+                    synchronized (sseServer) {
+                        sseServer.start();
+                        log.info("SSE Server Started and will be stopped after: " + stopAfterMillis + "ms.");
+                        Thread.sleep(stopAfterMillis);
+                        sseServer.stop();
+                        log.info("SSE Server Stopped.");
+                    }
                 } catch (Exception e) {
                     log.error("Failed to start/stop the SSE server.", e);
                 }
