@@ -39,6 +39,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.ServerPortsUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
@@ -99,12 +100,10 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
         super.init(userMode);
         securedEndpointHost = InetAddress.getLocalHost().getHostName();
-        int lowerPortLimit = 9950;
-        int upperPortLimit = 9999;
-        securedEndpointPort = getAvailablePort(lowerPortLimit, upperPortLimit);
+        securedEndpointPort = ServerPortsUtils.getAvailableHttpsPort(ServerPortsUtils.LOCALHOST);
         if (securedEndpointPort == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
-                    lowerPortLimit + "-" + upperPortLimit + " was found");
+                    ServerPortsUtils.httpsPortLowerRange + "-" + ServerPortsUtils.httpsPortUpperRange + " was found");
         }
         log.info("Selected port " + securedEndpointPort + " to start backend server");
         startSecureEndpoint(securedEndpointPort);
@@ -310,6 +309,7 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
                 "endpoint.jks";
         WireMockConfiguration wireMockConfiguration = new WireMockConfiguration();
         wireMockConfiguration.httpsPort(securedEndpointPort);
+        wireMockConfiguration.httpDisabled(true);
         wireMockConfiguration.keystorePath(jksPath);
         wireMockConfiguration.keystorePassword("wso2carbon");
         wireMockConfiguration.keyManagerPassword("wso2carbon");
@@ -322,9 +322,8 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws ApiException {
-
+        wireMockServer.stop();
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
-        wireMockServer.stop();
     }
 }
