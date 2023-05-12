@@ -21,7 +21,7 @@ package org.wso2.am.integration.test.utils;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ServerPortsUtils {
+public class MockServerUtils {
 
     public static String LOCALHOST = "localhost";
     public static final int httpPortLowerRange = 8080;
@@ -83,7 +83,7 @@ public class ServerPortsUtils {
      */
     private static int getAvailablePort(int lowerPortLimit, int upperPortLimit, String host) {
         while (lowerPortLimit < upperPortLimit) {
-            if (ServerPortsUtils.isPortFree(lowerPortLimit, host)) {
+            if (MockServerUtils.isPortFree(lowerPortLimit, host)) {
                 return lowerPortLimit;
             }
             lowerPortLimit += 1;

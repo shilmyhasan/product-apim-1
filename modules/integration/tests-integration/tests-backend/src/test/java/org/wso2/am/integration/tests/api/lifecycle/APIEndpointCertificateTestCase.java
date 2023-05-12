@@ -39,7 +39,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.ServerPortsUtils;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
@@ -49,7 +49,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -100,10 +99,10 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
         super.init(userMode);
         securedEndpointHost = InetAddress.getLocalHost().getHostName();
-        securedEndpointPort = ServerPortsUtils.getAvailableHttpsPort(ServerPortsUtils.LOCALHOST);
+        securedEndpointPort = MockServerUtils.getAvailableHttpsPort(MockServerUtils.LOCALHOST);
         if (securedEndpointPort == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
-                    ServerPortsUtils.httpsPortLowerRange + "-" + ServerPortsUtils.httpsPortUpperRange + " was found");
+                    MockServerUtils.httpsPortLowerRange + "-" + MockServerUtils.httpsPortUpperRange + " was found");
         }
         log.info("Selected port " + securedEndpointPort + " to start backend server");
         startSecureEndpoint(securedEndpointPort);
