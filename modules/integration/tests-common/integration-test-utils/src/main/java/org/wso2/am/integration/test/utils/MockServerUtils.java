@@ -28,6 +28,9 @@ public class MockServerUtils {
     public static final int httpPortUpperRange = 8099;
     public static final int httpsPortLowerRange = 9950;
     public static final int httpsPortUpperRange = 9999;
+    private static int httpOffset = 0;
+    private static int httpsOffset = 0;
+    private static final Object lock = new Object();
 
     /**
      * Check whether give port is available
@@ -57,38 +60,49 @@ public class MockServerUtils {
     }
 
     /**
-     * Returns a free port within httpPortLowerRange, httpPortUpperRange range
-     * @param host
-     * @return
-     */
-    public static int getAvailableHttpPort(String host) {
-        return getAvailablePort(httpPortLowerRange, httpPortUpperRange, host);
-    }
-
-    /**
-     * Returns a free port within httpsPortLowerRange, httpsPortUpperRange range
-     * @param host
-     * @return
-     */
-    public static int getAvailableHttpsPort(String host) {
-        return getAvailablePort(httpsPortLowerRange, httpsPortUpperRange, host);
-    }
-
-    /**
      * Find a free port to start backend WebSocket server in given port range
      *
-     * @param lowerPortLimit from port number
-     * @param upperPortLimit to port number
+     * @param isHttps
      * @return Available Port Number
      */
-    private static int getAvailablePort(int lowerPortLimit, int upperPortLimit, String host) {
-        while (lowerPortLimit < upperPortLimit) {
-            if (MockServerUtils.isPortFree(lowerPortLimit, host)) {
-                return lowerPortLimit;
+    public static int getAvailablePort(String host, boolean isHttps) {
+        synchronized (lock) {
+            int offset;
+            int upperPortLimit;
+            int lowerPortLimit;
+            if (isHttps) {
+                offset = httpsOffset;
+                upperPortLimit = httpsPortUpperRange;
+                lowerPortLimit = httpsPortLowerRange;
+            } else {
+                offset = httpOffset;
+                upperPortLimit = httpPortUpperRange;
+                lowerPortLimit = httpPortLowerRange;
             }
-            lowerPortLimit += 1;
+            int portRangeLen = upperPortLimit - lowerPortLimit;
+            int targetPort = lowerPortLimit + (offset % (portRangeLen + 1));
+            for (int i = 0; i < portRangeLen; i++) {
+                if (MockServerUtils.isPortFree(targetPort, host)) {
+                    if (isHttps) {
+                        httpsOffset = (httpsOffset + i + 1) % (portRangeLen + 1);
+                    } else {
+                        httpOffset = (httpOffset + i + 1) % (portRangeLen + 1);
+                    }
+                    return targetPort;
+                }
+                targetPort ++;
+                if (targetPort > upperPortLimit) {
+                    targetPort = lowerPortLimit;
+                }
+            }
+            return -1;
         }
-        return -1;
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 100; i++) {
+            System.out.println(getAvailablePort(LOCALHOST, false));
+        }
     }
 
 }

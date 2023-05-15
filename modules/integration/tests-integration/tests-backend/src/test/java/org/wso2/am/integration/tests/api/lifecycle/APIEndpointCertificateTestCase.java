@@ -96,10 +96,9 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
-
         super.init(userMode);
         securedEndpointHost = InetAddress.getLocalHost().getHostName();
-        securedEndpointPort = MockServerUtils.getAvailableHttpsPort(MockServerUtils.LOCALHOST);
+        securedEndpointPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
         if (securedEndpointPort == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
                     MockServerUtils.httpsPortLowerRange + "-" + MockServerUtils.httpsPortUpperRange + " was found");
