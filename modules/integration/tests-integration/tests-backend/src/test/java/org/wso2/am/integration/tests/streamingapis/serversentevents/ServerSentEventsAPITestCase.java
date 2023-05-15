@@ -47,6 +47,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TopicListDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -140,12 +141,10 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                 (new File(sseEventPublisherSource + sseThrottleOutEventPublisherSource),
                         new File(sseEventPublisherTarget + sseThrottleOutEventPublisherSource), false);
         sseServerHost = InetAddress.getLocalHost().getHostName();
-        int lowerPortLimit = 8080;
-        int upperPortLimit = 8090;
-        sseServerPort = StreamingApiTestUtils.getAvailablePort(lowerPortLimit, upperPortLimit, sseServerHost);
+        sseServerPort = MockServerUtils.getAvailablePort(sseServerHost, false);
         if (sseServerPort == -1) {
-            throw new APIManagerIntegrationTestException("No available port in the range " + lowerPortLimit + "-" +
-                    upperPortLimit + " was found");
+            throw new APIManagerIntegrationTestException("No available port in the range " +
+                    MockServerUtils.httpPortLowerRange + "-" + MockServerUtils.httpPortUpperRange + " was found");
         }
         log.info("Selected port " + sseServerPort + " to start backend server");
         initializeSseServer(sseServerPort);

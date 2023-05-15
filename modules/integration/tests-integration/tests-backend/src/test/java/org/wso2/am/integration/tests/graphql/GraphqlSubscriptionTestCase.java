@@ -63,6 +63,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
@@ -144,12 +145,10 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         userManagementClient.addUser(GRAPHQL_TEST_USER, GRAPHQL_TEST_USER_PASSWORD, new String[]{}, null);
         userManagementClient.addRole(GRAPHQL_ROLE, new String[]{GRAPHQL_TEST_USER}, new String[]{});
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
-        int lowerPortLimit = 9950;
-        int upperPortLimit = 9999;
-        webSocketServerPort = getAvailablePort(lowerPortLimit, upperPortLimit);
+        webSocketServerPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
         if (webSocketServerPort == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
-                    lowerPortLimit + "-" + upperPortLimit + " was found");
+                    MockServerUtils.httpsPortLowerRange + "-" + MockServerUtils.httpsPortUpperRange + " was found");
         }
         log.info("Selected port " + webSocketServerPort + " to start graphql subscription backend server");
         startGraphQLSubscriptionServer(webSocketServerPort);
@@ -644,51 +643,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                 Assert.fail("Cannot start GraphQL WebSocket server");
             }
         });
-    }
-
-    /**
-     * Find a free port to start backend WebSocket server in given port range
-     *
-     * @param lowerPortLimit from port number
-     * @param upperPortLimit to port number
-     * @return Available Port Number
-     */
-    protected int getAvailablePort(int lowerPortLimit, int upperPortLimit) {
-
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit)) {
-                return lowerPortLimit;
-            }
-            lowerPortLimit += 1;
-        }
-        return -1;
-    }
-
-    /**
-     * Check whether give port is available
-     *
-     * @param port Port Number
-     * @return status
-     */
-    private boolean isPortFree(int port) {
-
-        Socket s = null;
-        try {
-            s = new Socket("localhost", port);
-            // something is using the port and has responded.
-            return false;
-        } catch (IOException e) {
-            //port available
-            return true;
-        } finally {
-            if (s != null) {
-                try {
-                    s.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to close connection ", e);
-                }
-            }
-        }
     }
 
     private File getTempFileWithContent(String schema) throws Exception {
