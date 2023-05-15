@@ -49,6 +49,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -149,12 +150,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 (new File(wsEventPublisherSource + wsThrottleOutEventPublisherSource),
                         new File(wsEventPublisherTarget + wsThrottleOutEventPublisherSource), false);
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
-        int lowerPortLimit = 9950;
-        int upperPortLimit = 9999;
-        webSocketServerPort = getAvailablePort(lowerPortLimit, upperPortLimit);
+        webSocketServerPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
         if (webSocketServerPort == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
-                    lowerPortLimit + "-" + upperPortLimit + " was found");
+                    MockServerUtils.httpsPortLowerRange + "-" + MockServerUtils.httpsPortUpperRange + " was found");
         }
         log.info("Selected port " + webSocketServerPort + " to start backend server");
         startWebSocketServer(webSocketServerPort);

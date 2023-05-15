@@ -48,6 +48,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
@@ -546,56 +547,15 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
     }
 
     private void startWiremockServer() {
-        endpointPort = getAvailablePort();
-        assertNotEquals(endpointPort, -1, "No available port in the range " + lowerPortLimit + "-" +
-                upperPortLimit + " was found");
+        endpointPort =  MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
+        assertNotEquals(endpointPort, -1, "No available port in the range " +  MockServerUtils.httpsPortLowerRange
+                + "-" + MockServerUtils.httpsPortUpperRange + " was found");
         wireMockServer = new WireMockServer(options().port(endpointPort));
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/phoneverify/wsdl")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(wsdlDefinition)));
         wireMockServer.stubFor(WireMock.post(urlEqualTo("/phoneverify")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(responseBody)));
         wireMockServer.start();
-    }
-
-    /**
-     * Find a free port to start backend WebSocket server in given port range
-     *
-     * @return Available Port Number
-     */
-    private int getAvailablePort() {
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit)) {
-                return lowerPortLimit;
-            }
-            lowerPortLimit++;
-        }
-        return -1;
-    }
-
-    /**
-     * Check whether give port is available
-     *
-     * @param port Port Number
-     * @return status
-     */
-    private boolean isPortFree(int port) {
-        Socket s = null;
-        try {
-            s = new Socket(endpointHost, port);
-            // something is using the port and has responded.
-            return false;
-        } catch (IOException e) {
-            // port available
-            return true;
-        } finally {
-            if (s != null) {
-                try {
-                    s.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to close connection ", e);
-                }
-            }
-        }
     }
 
     private String createSoapToRestAppAndSubscribeToAPI(String appName, String tokenType, String apiId) throws ApiException, APIManagerIntegrationTestException {

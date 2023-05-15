@@ -53,6 +53,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -190,12 +191,10 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         subPolicyId = addedSubscriptionPolicyDTO.getPolicyId();
         Assert.assertNotNull(subPolicyId, "The policy ID cannot be null or empty");
 
-        int lowerPortLimit = 8080;
-        int upperPortLimit = 8090;
-        callbackReceiverPort = StreamingApiTestUtils.getAvailablePort(lowerPortLimit, upperPortLimit, serverHost);
+        callbackReceiverPort = MockServerUtils.getAvailablePort(serverHost, false);
         if (callbackReceiverPort == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
-                    lowerPortLimit + "-" + upperPortLimit + " was found");
+                    MockServerUtils.httpPortLowerRange + "-" + MockServerUtils.httpPortUpperRange + " was found");
         }
         log.info("Selected port " + callbackReceiverPort + " to start callback receiver");
         initializeCallbackReceiver(callbackReceiverPort);

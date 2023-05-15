@@ -33,43 +33,6 @@ public class StreamingApiTestUtils {
 
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
 
-    /**
-     * Returns the available port, within the range of given lower and upper ports, in the given host.
-     * @param lowerPortLimit    Lower port limit
-     * @param upperPortLimit    Upper port limit
-     * @param host              Host
-     * @return                  Available port
-     */
-    public static int getAvailablePort(int lowerPortLimit, int upperPortLimit, String host) {
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit, host)) {
-                return lowerPortLimit;
-            }
-            lowerPortLimit += 1;
-        }
-        return -1;
-    }
-
-    private static boolean isPortFree(int port, String host) {
-        Socket s = null;
-        try {
-            s = new Socket(host, port);
-            // something is using the port and has responded.
-            return false;
-        } catch (IOException e) {
-            //port available
-            return true;
-        } finally {
-            if (s != null) {
-                try {
-                    s.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to close connection ", e);
-                }
-            }
-        }
-    }
-
     public static String calculateRFC2104HMAC(String data, String key) throws NoSuchAlgorithmException,
             InvalidKeyException {
         SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA1_ALGORITHM);

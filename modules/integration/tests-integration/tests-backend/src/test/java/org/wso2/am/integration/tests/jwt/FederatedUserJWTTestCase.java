@@ -47,6 +47,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
@@ -141,10 +142,10 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
 
         super.init(userMode);
         authorizeURL = getKeyManagerURLHttps() + "/oauth2/authorize";
-        idpPort = getAvailablePort(9950, 9999);
+        idpPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, false);
         if (idpPort == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
-                    9950 + "-" + 9999 + " was found");
+                    MockServerUtils.httpPortLowerRange + "-" + MockServerUtils.httpPortUpperRange + " was found");
         }
         log.info("Selected port " + idpPort + " to start backend server");
         startIdp(idpPort);

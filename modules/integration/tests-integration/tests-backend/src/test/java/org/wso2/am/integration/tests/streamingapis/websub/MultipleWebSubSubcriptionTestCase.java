@@ -38,6 +38,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -141,8 +142,8 @@ public class MultipleWebSubSubcriptionTestCase extends APIMIntegrationBaseTest {
                 (new File(webSubEventPublisherSource + webSubThrottleOutEventPublisherSource),
                         new File(webSubEventPublisherTarget + webSubThrottleOutEventPublisherSource), false);
         serverHost = InetAddress.getLocalHost().getHostName();
-        callbackReceiverPort1 = getCallBackServletPort(8080, 8090);
-        callbackReceiverPort2 = getCallBackServletPort(8060, 8070);
+        callbackReceiverPort1 = getCallBackServletPort();
+        callbackReceiverPort2 = getCallBackServletPort();
         log.info("Selected port " + callbackReceiverPort1 + " to start callback receiver");
         callbackServerServlet = new CallbackServerServlet();
         initializeCallbackReceiver(callbackReceiverPort1, callbackServerServlet);
@@ -151,12 +152,12 @@ public class MultipleWebSubSubcriptionTestCase extends APIMIntegrationBaseTest {
         Thread.sleep(5000);
     }
 
-    private int getCallBackServletPort(int lowerPortLimit, int upperPortLimit) throws
+    private int getCallBackServletPort() throws
             APIManagerIntegrationTestException {
-        int port = StreamingApiTestUtils.getAvailablePort(lowerPortLimit, upperPortLimit, serverHost);
+        int port = MockServerUtils.getAvailablePort(serverHost, false);
         if (port == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
-                    lowerPortLimit + "-" + upperPortLimit + " was found");
+                    MockServerUtils.httpPortLowerRange + "-" + MockServerUtils.httpPortUpperRange + " was found");
         }
         return port;
     }
