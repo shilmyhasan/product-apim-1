@@ -18,11 +18,14 @@
 
 package org.wso2.am.integration.test.utils;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.IOException;
 import java.net.Socket;
 
 public class MockServerUtils {
-
+    private static final Log log = LogFactory.getLog(MockServerUtils.class);
     public static String LOCALHOST = "localhost";
     public static final int httpPortLowerRange = 8080;
     public static final int httpPortUpperRange = 8099;
@@ -88,6 +91,7 @@ public class MockServerUtils {
                     } else {
                         httpOffset = (httpOffset + i + 1) % (portRangeLen + 1);
                     }
+                    log.info("Port " + targetPort + " selected for mock server.");
                     return targetPort;
                 }
                 targetPort ++;
