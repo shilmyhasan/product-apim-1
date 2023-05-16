@@ -971,13 +971,23 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(response.getResponseCode(), 500,
                 "Clean up pending task process is failed for API state change");
 
-        //create Application
-        HttpResponse applicationResponseNew = restAPIStore.createApplication(applicationName,
+        // TODO should extract the following part to a new test method.
+        //create Application 2
+        String apiName2 = "WorkflowCheckingAPINew2";
+        String apiContext2 = "workflowChecking";
+        String applicationName2 = "MyApp2";
+        APIRequest apiRequest2;
+        apiRequest2 = new APIRequest(apiName2, apiContext2, new URL(url));
+        apiRequest2.setVersion(apiVersion);
+        apiRequest2.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest2.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest2.setProvider(USER_SMITH);
+        HttpResponse applicationResponseNew = restAPIStore.createApplication(applicationName2,
                 "Testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
         String applicationIDSecond = applicationResponseNew.getData();
         //create API and request for publish the API
-        HttpResponse apiResponseNew = restAPIPublisher.addAPI(apiRequest);
+        HttpResponse apiResponseNew = restAPIPublisher.addAPI(apiRequest2);
         String apiIdSecond = apiResponseNew.getData();
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiIdSecond, restAPIPublisher);
@@ -996,7 +1006,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         for (int i = 0; i < arr.length(); i++) {
             JSONObject listItem = (JSONObject) arr.get(i);
             properties = (JSONObject) listItem.get("properties");
-            if (properties.has("apiName") && apiName.equals(properties.get("apiName"))) {
+            if (properties.has("apiName") && apiName2.equals(properties.get("apiName"))) {
                 apiStateChangeNewExternalWorkflowRef = (String) listItem.get("referenceId");
             }
         }
@@ -1018,7 +1028,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         for (int i = 0; i < arr.length(); i++) {
             JSONObject listItem = (JSONObject) arr.get(i);
             properties = (JSONObject) listItem.get("properties");
-            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))) {
+            if (properties.has("applicationName") && applicationName2.equals(properties.get("applicationName"))) {
                 applicationCreationNewExternalWorkflowRef = (String) listItem.get("referenceId");
             }
         }
@@ -1046,8 +1056,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         for (int i = 0; i < arr.length(); i++) {
             JSONObject listItem = (JSONObject) arr.get(i);
             properties = (JSONObject) listItem.get("properties");
-            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))
-                    && properties.has("apiName") &&  apiName.equals(properties.get("apiName"))) {
+            if (properties.has("applicationName") && applicationName2.equals(properties.get("applicationName"))
+                    && properties.has("apiName") &&  apiName2.equals(properties.get("apiName"))) {
                 subscriptionCreationExternalWorkflowRef = (String) listItem.get("referenceId");
             }
         }
@@ -1075,7 +1085,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         for (int i = 0; i < arr.length(); i++) {
             JSONObject listItem = (JSONObject) arr.get(i);
             properties = (JSONObject) listItem.get("properties");
-            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))) {
+            if (properties.has("applicationName") && applicationName2.equals(properties.get("applicationName"))) {
                 keyGenerationExternalWorkflowRef = (String) listItem.get("referenceId");
             }
         }
@@ -1086,7 +1096,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending request failed for User Admin");
         //clean up process for all pending requests
         restAPIStore.deleteApplication(applicationIDSecond);
-        removeDeletePendingApplication(applicationName);
+        removeDeletePendingApplication(applicationName2);
         undeployAndDeleteAPIRevisionsUsingRest(apiIdSecond, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiIdSecond);
         //check the clean up process is successful (Application key generation, API subscription)
