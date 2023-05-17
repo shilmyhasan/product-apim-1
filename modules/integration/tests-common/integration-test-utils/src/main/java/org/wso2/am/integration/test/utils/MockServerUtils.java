@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Random;
 
 public class MockServerUtils {
     private static final Log log = LogFactory.getLog(MockServerUtils.class);
@@ -33,6 +34,11 @@ public class MockServerUtils {
     public static final int httpsPortUpperRange = 9999;
     private static int httpOffset = 0;
     private static int httpsOffset = 0;
+    static {
+        Random random = new Random();
+        httpOffset = random.nextInt(httpPortUpperRange - httpPortLowerRange + 1) + httpPortLowerRange;
+        httpsOffset = random.nextInt(httpsPortUpperRange - httpsPortLowerRange + 1) + httpsPortLowerRange;
+    }
     private static final Object lock = new Object();
 
     /**
