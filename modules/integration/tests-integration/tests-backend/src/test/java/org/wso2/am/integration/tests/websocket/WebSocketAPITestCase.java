@@ -93,7 +93,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         HEADER,
         QUERY
     }
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final String apiName = "WebSocketAPI";
     private final String applicationName = "WebSocketApplication";
     private final String applicationJWTName = "WebSocketJWTTypeApplication";
@@ -121,6 +120,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     String appJWTId;
     String apiVersion2 = "2.0.0";
     String endPointApplication = "EndPointApplication";
+    Server server = null;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -482,30 +482,23 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      * @param serverPort Port that WebSocket Server starts
      */
     private void startWebSocketServer(final int serverPort) {
+        WebSocketHandler wsHandler = new WebSocketHandler() {
+            @Override
+            public void configure(WebSocketServletFactory factory) {
 
-        executorService.execute(new Runnable() {
-            public void run() {
-
-                WebSocketHandler wsHandler = new WebSocketHandler() {
-                    @Override
-                    public void configure(WebSocketServletFactory factory) {
-
-                        factory.register(WebSocketServerImpl.class);
-                    }
-                };
-                Server server = new Server(serverPort);
-                server.setHandler(wsHandler);
-                try {
-                    server.start();
-                    log.info("WebSocket backend server started at port: " + serverPort);
-                } catch (InterruptedException ignore) {
-                } catch (Exception e) {
-                    log.error("Error while starting backend server at port: " + serverPort, e);
-                    Assert.fail("Cannot start WebSocket server");
-                }
+                factory.register(WebSocketServerImpl.class);
             }
-
-        });
+        };
+        server = new Server(serverPort);
+        server.setHandler(wsHandler);
+        try {
+            server.start();
+            log.info("WebSocket backend server started at port: " + serverPort);
+        } catch (InterruptedException ignore) {
+        } catch (Exception e) {
+            log.error("Error while starting backend server at port: " + serverPort, e);
+            Assert.fail("Cannot start WebSocket server");
+        }
     }
 
     /**
@@ -602,9 +595,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
+        if (server != null) {
+            server.stop();
+        }
         serverConfigurationManager.restoreToLastConfiguration(false);
-        executorService.shutdownNow();
         super.cleanUp();
     }
 }
