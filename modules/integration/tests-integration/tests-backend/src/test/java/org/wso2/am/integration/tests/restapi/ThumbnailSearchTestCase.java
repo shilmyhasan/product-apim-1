@@ -46,7 +46,8 @@ public class ThumbnailSearchTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test whether the hasThumbnail variable is set to true when searching")
+    @Test(groups = { "wso2.am" },
+            description = "Test whether the API thumbnail information is reflected in the API search results.")
     public void testHasThumbnailVariableWhenSearch() throws Exception {
 
         //prepare API to create and publish
