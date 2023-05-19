@@ -66,9 +66,11 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.base.MultitenantConstants;
+import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
+import org.wso2.carbon.logging.view.data.xsd.LogEvent;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
@@ -78,6 +80,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLEncoder;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -134,6 +137,7 @@ public class APIMIntegrationBaseTest {
     protected  RestAPIInternalImpl restAPIInternal;
     protected final int inboundWebSocketPort = 9099;
     protected final int portOffset = 500;  //This need to be properly fixed rather than hard coding
+    protected LogViewerClient logViewerClient;
 
     /**
      * This method will initialize test environment
@@ -254,6 +258,11 @@ public class APIMIntegrationBaseTest {
                 identityProviderMgtServiceClient =
                         new IdentityProviderMgtServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                 keymanagerSessionCookie);
+                AutomationContext autoContext = new AutomationContext();
+                logViewerClient = new LogViewerClient(autoContext.getContextUrls().getBackEndUrl(),
+                        autoContext.getSuperTenant().getTenantAdmin().getUserName(),
+                        autoContext.getSuperTenant().getTenantAdmin().getPassword());
+                logViewerClient.clearLogs();
             } catch (Exception e) {
                 throw new APIManagerIntegrationTestException(e.getMessage(), e);
             }
@@ -1069,6 +1078,40 @@ public class APIMIntegrationBaseTest {
         //Waiting for API un-deployment
         waitForAPIDeployment();
         return  revisionUUID;
+    }
+
+    /**
+     * Wait for the given log entry to be printed
+     * @param logMessage    Required log message
+     * @param retryCount    Retry attempt count
+     * @throws RemoteException
+     * @throws InterruptedException
+     */
+    protected void waitForServerLog(String logMessage, int retryCount) throws RemoteException, InterruptedException {
+
+        int retryAttempt = 0;
+        boolean isServerLogReceived = isServerLogReceived(logMessage);
+        while (retryAttempt < retryCount && !isServerLogReceived) {
+            Thread.sleep(12000);
+            if (isServerLogReceived(logMessage))
+                break;
+            retryAttempt++;
+            log.info("Server log entry '" + logMessage + "' not received. Retrying attempt - " + retryAttempt);
+        }
+    }
+
+    private boolean isServerLogReceived(String logMessage) throws RemoteException {
+        LogEvent[] logEvents = logViewerClient.getAllRemoteSystemLogs();
+        boolean isLogReceived = false;
+        for (LogEvent logEvent : logEvents) {
+            if (logEvent.getMessage() != null && logEvent.getMessage().contains(logMessage)) {
+                log.info("Server log entry '" + logMessage + "' received successfully.");
+                logViewerClient.clearLogs();
+                isLogReceived = true;
+                break;
+            }
+        }
+        return isLogReceived;
     }
 
     protected static void waitUntilClockMinute() throws InterruptedException {

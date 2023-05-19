@@ -72,6 +72,9 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     private final String API_NAME = "APIEndpointCertificateTestCase";
     private final String API_CONTEXT = "APIEndpointCertificateTestCase";
     private final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String HTTPS_TRP_SENDER_UPDATED_WITH_CERT_LOG = "Pass-through HTTPS Sender updated with "
+            + "Dynamic "
+            + "Configuration Updates";
     int securedEndpointPort;
     String securedEndpointHost;
     String applicationId;
@@ -261,6 +264,8 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     public void testInvokeAPI() throws ApiException, InterruptedException, XPathExpressionException, IOException {
 
         Thread.sleep(60000); // Sleep to reload the transport
+        //Wait for HTTPS Transport Sender reloaded with uploaded cert
+        waitForServerLog(HTTPS_TRP_SENDER_UPDATED_WITH_CERT_LOG, 5);
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
@@ -280,6 +285,8 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         response = restAPIPublisher.deleteEndpointCertificate("endpoint-2");
         Assert.assertEquals(response.getStatusCode(), 200);
         Thread.sleep(60500); // Sleep to reload the transport
+        //Wait for HTTPS Transport Sender reloaded with uploaded cert
+        waitForServerLog(HTTPS_TRP_SENDER_UPDATED_WITH_CERT_LOG, 5);
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
