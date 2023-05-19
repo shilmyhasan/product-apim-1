@@ -91,7 +91,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -110,7 +109,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     private static final String GRAPHQL_API_NAME = "SnowtoothGraphQLSubAPI";
     private static final String GRAPHQL_API_CONTEXT = "snowtooth";
     private static final String GRAPHQL_API_VERSION = "1.0.0";
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private int webSocketServerPort;
     private String webSocketServerHost;
     private String graphqlApiId;
@@ -120,6 +118,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     String throttleAppId;
     String complexAppId;
     String depthAppId;
+    Server server = null;
 
     private enum AUTH_IN {
         HEADER,
@@ -622,9 +621,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
      * @param serverPort Port that WebSocket Server starts
      */
     private void startGraphQLSubscriptionServer(final int serverPort) {
-
-        executorService.execute(() -> {
-
             WebSocketHandler wsHandler = new WebSocketHandler() {
                 @Override
                 public void configure(WebSocketServletFactory factory) {
@@ -633,7 +629,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                 }
             };
 
-            Server server = new Server(serverPort);
+            server = new Server(serverPort);
             server.setHandler(wsHandler);
             try {
                 server.start();
@@ -643,7 +639,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                 log.error("Error while starting graphql backend server at port: " + serverPort, e);
                 Assert.fail("Cannot start GraphQL WebSocket server");
             }
-        });
     }
 
     private File getTempFileWithContent(String schema) throws Exception {
@@ -1024,6 +1019,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        if (server != null) {
+            server.stop();
+        }
         userManagementClient.deleteRole(GRAPHQL_ROLE);
         userManagementClient.deleteUser(GRAPHQL_TEST_USER);
         restAPIStore.deleteApplication(appJWTId);
@@ -1031,7 +1029,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(depthAppId);
         restAPIStore.deleteApplication(throttleAppId);
         undeployAndDeleteAPIRevisionsUsingRest(graphqlApiId, restAPIPublisher);
-        executorService.shutdownNow();
         super.cleanUp();
     }
 }
