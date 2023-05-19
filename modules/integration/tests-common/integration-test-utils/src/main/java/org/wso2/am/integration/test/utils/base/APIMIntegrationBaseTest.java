@@ -1093,18 +1093,18 @@ public class APIMIntegrationBaseTest {
         boolean isServerLogReceived = isServerLogReceived(logMessage);
         while (retryAttempt < retryCount && !isServerLogReceived) {
             Thread.sleep(12000);
-            isServerLogReceived(logMessage);
+            if (isServerLogReceived(logMessage))
+                break;
             retryAttempt++;
             log.info("Server log entry '" + logMessage + "' not received. Retrying attempt - " + retryAttempt);
         }
     }
 
     private boolean isServerLogReceived(String logMessage) throws RemoteException {
-        LogEvent[] logEvents = new LogEvent[0];
-        logEvents = logViewerClient.getAllRemoteSystemLogs();
+        LogEvent[] logEvents = logViewerClient.getAllRemoteSystemLogs();
         boolean isLogReceived = false;
         for (LogEvent logEvent : logEvents) {
-            if (logEvent.getMessage().contains(logMessage)) {
+            if (logEvent.getMessage() != null && logEvent.getMessage().contains(logMessage)) {
                 log.info("Server log entry '" + logMessage + "' received successfully.");
                 logViewerClient.clearLogs();
                 isLogReceived = true;
