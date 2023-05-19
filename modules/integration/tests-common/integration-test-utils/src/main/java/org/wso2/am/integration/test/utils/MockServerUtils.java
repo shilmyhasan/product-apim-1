@@ -32,7 +32,7 @@ public class MockServerUtils {
     public static final int httpPortUpperRange = 8099;
     public static final int httpsPortLowerRange = 9950;
     public static final int httpsPortUpperRange = 9999;
-    private static final int[] prohibitedPorts = new int[]{ 9960 };
+    private static final int[] reservedPorts = new int[]{ 9960 };
     private static int httpOffset = 0;
     private static int httpsOffset = 0;
     static {
@@ -49,7 +49,7 @@ public class MockServerUtils {
      * @return status
      */
     private static boolean isPortFree(int port, String host) {
-        if (isPortProhibited(port)) {
+        if (isPortReserved(port)) {
             return false;
         }
         Socket s = null;
@@ -112,8 +112,8 @@ public class MockServerUtils {
         }
     }
 
-    private static boolean isPortProhibited(int port) {
-        for (int prohibitedPort : prohibitedPorts) {
+    private static boolean isPortReserved(int port) {
+        for (int prohibitedPort : reservedPorts) {
             if (port == prohibitedPort) {
                 return true;
             }
