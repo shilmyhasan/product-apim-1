@@ -982,6 +982,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                 log.info("Count :" + count + " Message :" + responseMessage);
                 // At the 3rd message check frame is throttled out.
                 if (count == limit) {
+                    log.info("Current minute: " + LocalDateTime.now().getMinute() + " Started minute: " + startingDistinctUnitTime);
                     //If throttling testing time duration is dispersed into two separate unit times, repeat the test
                     if (LocalDateTime.now().getMinute() != startingDistinctUnitTime) {
                         //repeat the test
