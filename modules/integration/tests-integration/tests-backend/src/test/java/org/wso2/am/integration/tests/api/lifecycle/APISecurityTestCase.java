@@ -436,7 +436,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(httpResponseAfterPublish.getResponseCode(), 200);
 
         // wait until certificates loaded
-        Thread.sleep(40000);
+        Thread.sleep(120000);
         //Retry if the cert has not been reloaded within the given time
         waitForServerLog(HTTPS_TRP_LISTENER_RELOADED_WITH_CERT_LOG, 5);
     }
