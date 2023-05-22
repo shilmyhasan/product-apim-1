@@ -74,24 +74,24 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertEquals;
@@ -119,6 +119,16 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     String complexAppId;
     String depthAppId;
     Server server = null;
+    private String wsRequestEventPublisherSource = "WS_Req_Logger.xml";
+    private String wsThrottleOutEventPublisherSource = "WS_Throttle_Out_Logger.xml";
+    private ServerConfigurationManager serverConfigurationManager;
+    private String wsEventPublisherSource = TestConfigurationProvider.getResourceLocation() + File.separator +
+            "artifacts"
+            + File.separator + "AM" + File.separator + "configFiles" + File.separator + "webSocketTest"
+            + File.separator;
+    private String wsEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository"
+            + File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers"
+            + File.separator;
 
     private enum AUTH_IN {
         HEADER,
@@ -142,6 +152,13 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
 
         super.init(userMode);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+        serverConfigurationManager.applyConfigurationWithoutRestart
+                (new File(wsEventPublisherSource + wsRequestEventPublisherSource),
+                        new File(wsEventPublisherTarget + wsRequestEventPublisherSource), false);
+        serverConfigurationManager.applyConfigurationWithoutRestart
+                (new File(wsEventPublisherSource + wsThrottleOutEventPublisherSource),
+                        new File(wsEventPublisherTarget + wsThrottleOutEventPublisherSource), false);
         userManagementClient.addUser(GRAPHQL_TEST_USER, GRAPHQL_TEST_USER_PASSWORD, new String[]{}, null);
         userManagementClient.addRole(GRAPHQL_ROLE, new String[]{GRAPHQL_TEST_USER}, new String[]{});
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
@@ -663,7 +680,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         while (StringUtils.isEmpty(clientSocket.getResponseMessage()) && waitTime > System.currentTimeMillis()) {
             try {
                 log.info("Waiting for reply from server:");
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException ignored) {
             }
         }
@@ -944,6 +961,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
         waitUntilClockMinute();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
+        log.info("Starting throttling test at: " + LocalDateTime.now());
         int limit = 4;
         WebSocketClient client = new WebSocketClient();
         SubscriptionWSClientImpl socket = new SubscriptionWSClientImpl();
@@ -979,9 +997,10 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                 }
                 waitForReply(socket);
                 String responseMessage = socket.getResponseMessage();
-                log.info("Count :" + count + " Message :" + responseMessage);
+                log.info("Count :" + count + " Message :" + responseMessage + " At: " + LocalDateTime.now());
                 // At the 3rd message check frame is throttled out.
                 if (count == limit) {
+                    log.info("Current minute: " + LocalDateTime.now().getMinute() + " Started minute: " + startingDistinctUnitTime);
                     //If throttling testing time duration is dispersed into two separate unit times, repeat the test
                     if (LocalDateTime.now().getMinute() != startingDistinctUnitTime) {
                         //repeat the test
@@ -1022,6 +1041,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         if (server != null) {
             server.stop();
         }
+        serverConfigurationManager.restoreToLastConfiguration(false);
         userManagementClient.deleteRole(GRAPHQL_ROLE);
         userManagementClient.deleteUser(GRAPHQL_TEST_USER);
         restAPIStore.deleteApplication(appJWTId);
