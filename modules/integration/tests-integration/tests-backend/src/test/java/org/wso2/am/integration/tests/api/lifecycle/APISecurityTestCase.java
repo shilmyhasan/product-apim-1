@@ -123,6 +123,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     String users[] = {"apisecUser", "apisecUser2@wso2.com", "apisecUser2@abc.com"};
     String endUserPassword = "password@123";
+    private static final String HTTPS_TRP_LISTENER_RELOADED_WITH_CERT_LOG = "HTTPS Reloaded";
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -435,7 +436,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(httpResponseAfterPublish.getResponseCode(), 200);
 
         // wait until certificates loaded
-        Thread.sleep(120000);
+        Thread.sleep(40000);
+        //Retry if the cert has not been reloaded within the given time
+        waitForServerLog(HTTPS_TRP_LISTENER_RELOADED_WITH_CERT_LOG, 5);
     }
 
     private HttpResponse invokeApiWithInternalKey(String context, String version, String resource,

@@ -1092,7 +1092,7 @@ public class APIMIntegrationBaseTest {
         int retryAttempt = 0;
         boolean isServerLogReceived = isServerLogReceived(logMessage);
         while (retryAttempt < retryCount && !isServerLogReceived) {
-            Thread.sleep(12000);
+            Thread.sleep(30000);
             if (isServerLogReceived(logMessage))
                 break;
             retryAttempt++;
