@@ -356,6 +356,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
 
                 if (!Server.STOPPED.equals(sseServer.getState())) {
                     try {
+                        log.info("Stopping the SSE server for server restart as it is already running in the state "
+                                + sseServer.getState());
                         sseServer.stop();
                     } catch (Exception e) {
                         log.error("Failed to stop the SSE server for server restart", e);
