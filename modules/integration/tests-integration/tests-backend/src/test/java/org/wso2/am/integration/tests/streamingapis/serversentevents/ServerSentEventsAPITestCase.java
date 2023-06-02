@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.json.JSONObject;
@@ -71,8 +72,10 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -141,13 +144,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                 (new File(sseEventPublisherSource + sseThrottleOutEventPublisherSource),
                         new File(sseEventPublisherTarget + sseThrottleOutEventPublisherSource), false);
         sseServerHost = InetAddress.getLocalHost().getHostName();
-        sseServerPort = MockServerUtils.getAvailablePort(sseServerHost, false);
-        if (sseServerPort == -1) {
-            throw new APIManagerIntegrationTestException("No available port in the range " +
-                    MockServerUtils.httpPortLowerRange + "-" + MockServerUtils.httpPortUpperRange + " was found");
-        }
-        log.info("Selected port " + sseServerPort + " to start backend server");
-        initializeSseServer(sseServerPort);
+        initializeSseServer();
     }
 
     @Test(description = "Publish SSE API")
@@ -330,16 +327,20 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(isThrottled.get());
     }
 
-    private void initializeSseServer(int port) {
-        Server server = new Server(port);
-        ServletHandler servletHandler = new ServletHandler();
-        server.setHandler(servletHandler);
+    private void initializeSseServer() {
+        Server server = new Server();
+        ServerConnector connector = new ServerConnector(server);
+        connector.setHost(sseServerHost);
+        server.addConnector(connector);
 
-        sseServlet = new SseServlet();
-        ServletHolder servletHolder = new ServletHolder(sseServlet);
-        servletHandler.addServletWithMapping(servletHolder, "/memory");
-
-        sseServer = server;
+        try{
+            server.start();
+            sseServerPort = connector.getLocalPort();
+            log.info("SSE server started on port " + sseServerPort + "., while initializing the test.");
+            sseServer = server;
+        } catch (Exception e) {
+            log.error("Failed to start SSE server while initializing the tests.", e);
+        }
     }
 
     private void invokeSseApi(String bearerToken, long runForMillis) throws Exception {
@@ -352,14 +353,46 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
+
+                if (!Server.STOPPED.equals(sseServer.getState())) {
+                    try {
+                        log.info("Stopping the SSE server for server restart as it is already running in the state "
+                                + sseServer.getState());
+                        sseServer.stop();
+                        while (!Server.STOPPED.equals(sseServer.getState())) {
+                            Thread.sleep(1000);
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to stop the SSE server for server restart", e);
+                    }
+                }
                 try {
+                    Server server = new Server(sseServerPort);
+                    ServletHandler servletHandler = new ServletHandler();
+                    server.setHandler(servletHandler);
+
+                    sseServlet = new SseServlet();
+                    ServletHolder servletHolder = new ServletHolder(sseServlet);
+                    servletHandler.addServletWithMapping(servletHolder, "/memory");
+                    sseServer = server;
                     sseServer.start();
+                    while (!Server.STARTED.equals(sseServer.getState())) {
+                        Thread.sleep(1000);
+                    }
                     log.info("SSE Server Started and will be stopped after: " + stopAfterMillis + "ms.");
+                } catch (InterruptedException e) {
+                    log.error("Thread Interrupted while restarting the server by , ", e);
+                } catch (Exception e) {
+                    log.error("Failed to re start the SSE server.", e);
+                }
+                try {
                     Thread.sleep(stopAfterMillis);
                     sseServer.stop();
-                    log.info("SSE Server Stopped.");
-                } catch (Exception e) {
-                    log.error("Failed to start/stop the SSE server.", e);
+                    log.info("SSE server stopped after " + stopAfterMillis + " milliseconds.");
+                } catch (InterruptedException e) {
+                    log.error("Thread Interrupted while re stopping the server by, ", e);
+                }catch (Exception e) {
+                    log.error("Failed to stop the SSE server after the restart.", e);
                 }
             }
         });
@@ -379,6 +412,10 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
+        if(!Server.STOPPED.equals(sseServer.getState())){
+            sseServer.stop();
+        }
+        sseServer.destroy();
         serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
         super.cleanUp();
