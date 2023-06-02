@@ -385,6 +385,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                 try {
                     Thread.sleep(stopAfterMillis);
                     sseServer.stop();
+                    log.info("SSE server stopped after " + stopAfterMillis + " milliseconds.");
                 } catch (InterruptedException e) {
                     log.error("Thread Interrupted while re stopping the server by, ", e);
                 }catch (Exception e) {
