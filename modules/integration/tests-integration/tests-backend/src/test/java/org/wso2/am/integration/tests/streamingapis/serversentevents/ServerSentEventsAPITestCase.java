@@ -330,13 +330,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     private void initializeSseServer() {
         Server server = new Server();
         ServerConnector connector = new ServerConnector(server);
+        connector.setHost(sseServerHost);
         server.addConnector(connector);
-        ServletHandler servletHandler = new ServletHandler();
-        server.setHandler(servletHandler);
-
-        sseServlet = new SseServlet();
-        ServletHolder servletHolder = new ServletHolder(sseServlet);
-        servletHandler.addServletWithMapping(servletHolder, "/memory");
 
         try{
             server.start();
@@ -359,28 +354,43 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
             @Override
             public void run() {
 
-                    if (!sseServer.getState().equals(Server.STOPPED)) {
-                        try {
-                            sseServer.stop();
-                        } catch (Exception e) {
-                            log.error("Failed to stop the SSE server for server restart", e);
-                        }
-                    }
+                if (!sseServer.getState().equals(Server.STOPPED)) {
                     try {
-                        while(!sseServer.getState().equals(Server.STOPPED)) {
-                            Thread.sleep(1000);
-                        }
-                        sseServer = new Server(sseServerPort);
-                        sseServer.start();
-                        while(!sseServer.getState().equals(Server.STARTED)) {
-                            Thread.sleep(1000);
-                        }
-                    } catch (InterruptedException e) {
-                        log.error("Thread Interrupted while restarting the server by , ", e);
+                        sseServer.stop();
                     } catch (Exception e) {
-                        log.error("Failed to re start the SSE server.", e);
+                        log.error("Failed to stop the SSE server for server restart", e);
                     }
                 }
+                try {
+                    while (!sseServer.getState().equals(Server.STOPPED)) {
+                        Thread.sleep(1000);
+                    }
+                    Server server = new Server(sseServerPort);
+                    ServletHandler servletHandler = new ServletHandler();
+                    server.setHandler(servletHandler);
+
+                    sseServlet = new SseServlet();
+                    ServletHolder servletHolder = new ServletHolder(sseServlet);
+                    servletHandler.addServletWithMapping(servletHolder, "/memory");
+                    sseServer = server;
+                    sseServer.start();
+                    while (!sseServer.getState().equals(Server.STARTED)) {
+                        Thread.sleep(1000);
+                    }
+                } catch (InterruptedException e) {
+                    log.error("Thread Interrupted while restarting the server by , ", e);
+                } catch (Exception e) {
+                    log.error("Failed to re start the SSE server.", e);
+                }
+                try {
+                    Thread.sleep(stopAfterMillis);
+                    sseServer.stop();
+                } catch (InterruptedException e) {
+                    log.error("Thread Interrupted while re stopping the server by, ", e);
+                }catch (Exception e) {
+                    log.error("Failed to stop the SSE server after the restart.", e);
+                }
+            }
         });
     }
 
