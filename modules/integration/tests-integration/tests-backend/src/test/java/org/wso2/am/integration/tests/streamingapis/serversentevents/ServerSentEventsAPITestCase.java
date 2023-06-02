@@ -341,10 +341,10 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         try{
             server.start();
             sseServerPort = connector.getLocalPort();
-            log.info("SSE server started on port " + sseServerPort + ".");
+            log.info("SSE server started on port " + sseServerPort + "., while initializing the test.");
             sseServer = server;
         } catch (Exception e) {
-            log.error("Failed to initialize SSE server.", e);
+            log.error("Failed to start SSE server while initializing the tests.", e);
         }
     }
 
@@ -363,25 +363,24 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                         try {
                             sseServer.stop();
                         } catch (Exception e) {
-                            log.error("Failed to stop the SSE server.", e);
+                            log.error("Failed to stop the SSE server for server restart", e);
                         }
                     }
                     try {
                         while(!sseServer.getState().equals(Server.STOPPED)) {
                             Thread.sleep(1000);
                         }
+                        sseServer = new Server(sseServerPort);
                         sseServer.start();
                         while(!sseServer.getState().equals(Server.STARTED)) {
                             Thread.sleep(1000);
                         }
-                        log.info("SSE Server Started");
                     } catch (InterruptedException e) {
-                        log.error("Thread Interrupted by , ", e);
+                        log.error("Thread Interrupted while restarting the server by , ", e);
                     } catch (Exception e) {
-                        log.error("Failed to start the SSE server.", e);
+                        log.error("Failed to re start the SSE server.", e);
                     }
                 }
-
         });
     }
 
@@ -399,7 +398,10 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
-        sseServer.stop();
+        if(!sseServer.getState().equals(Server.STOPPED)){
+            sseServer.stop();
+        }
+        sseServer.destroy();
         serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
         super.cleanUp();
