@@ -359,14 +359,14 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                         log.info("Stopping the SSE server for server restart as it is already running in the state "
                                 + sseServer.getState());
                         sseServer.stop();
+                        while (!Server.STOPPED.equals(sseServer.getState())) {
+                            Thread.sleep(1000);
+                        }
                     } catch (Exception e) {
                         log.error("Failed to stop the SSE server for server restart", e);
                     }
                 }
                 try {
-                    while (!Server.STOPPED.equals(sseServer.getState())) {
-                        Thread.sleep(1000);
-                    }
                     Server server = new Server(sseServerPort);
                     ServletHandler servletHandler = new ServletHandler();
                     server.setHandler(servletHandler);
@@ -412,7 +412,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
-        if(!sseServer.getState().equals(Server.STOPPED)){
+        if(!Server.STOPPED.equals(sseServer.getState())){
             sseServer.stop();
         }
         sseServer.destroy();
