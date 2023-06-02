@@ -354,7 +354,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
             @Override
             public void run() {
 
-                if (!sseServer.getState().equals(Server.STOPPED)) {
+                if (!Server.STOPPED.equals(sseServer.getState())) {
                     try {
                         sseServer.stop();
                     } catch (Exception e) {
@@ -362,7 +362,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                     }
                 }
                 try {
-                    while (!sseServer.getState().equals(Server.STOPPED)) {
+                    while (!Server.STOPPED.equals(sseServer.getState())) {
                         Thread.sleep(1000);
                     }
                     Server server = new Server(sseServerPort);
@@ -374,9 +374,10 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                     servletHandler.addServletWithMapping(servletHolder, "/memory");
                     sseServer = server;
                     sseServer.start();
-                    while (!sseServer.getState().equals(Server.STARTED)) {
+                    while (!Server.STARTED.equals(sseServer.getState())) {
                         Thread.sleep(1000);
                     }
+                    log.info("SSE Server Started and will be stopped after: " + stopAfterMillis + "ms.");
                 } catch (InterruptedException e) {
                     log.error("Thread Interrupted while restarting the server by , ", e);
                 } catch (Exception e) {
