@@ -106,8 +106,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     private String responseBody;
     private String endpointHost = "http://localhost";
     private int endpointPort;
-    private int lowerPortLimit = 9950;
-    private int upperPortLimit = 9999;
     private WireMockServer wireMockServer;
     private String apiEndPointURL;
     private String wsdlURL;
@@ -311,15 +309,14 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     }
 
     private void startWiremockServer() {
-        endpointPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
-        assertNotEquals(endpointPort, -1, "No available port in the range " + MockServerUtils.httpsPortLowerRange
-                + "-" + MockServerUtils.httpsPortUpperRange + " was found");
-        wireMockServer = new WireMockServer(options().port(endpointPort));
+        wireMockServer = new WireMockServer(options().port(0));
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/phoneverify/wsdl")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(wsdlDefinition)));
         wireMockServer.stubFor(WireMock.post(urlEqualTo("/phoneverify")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(responseBody)));
         wireMockServer.start();
+        endpointPort = wireMockServer.port();
+        log.info("Wiremock server started on port " + endpointPort);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing WSDL API definition and create API",
