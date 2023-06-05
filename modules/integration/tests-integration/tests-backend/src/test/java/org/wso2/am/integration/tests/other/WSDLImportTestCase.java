@@ -309,7 +309,7 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     }
 
     private void startWiremockServer() {
-        wireMockServer = new WireMockServer(options().port(endpointPort));
+        wireMockServer = new WireMockServer(options().port(0));
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/phoneverify/wsdl")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(wsdlDefinition)));
         wireMockServer.stubFor(WireMock.post(urlEqualTo("/phoneverify")).willReturn(aResponse()
