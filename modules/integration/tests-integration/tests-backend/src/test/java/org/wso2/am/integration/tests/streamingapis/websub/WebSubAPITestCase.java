@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.testng.Assert;
@@ -145,22 +146,9 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
                 (new File(webSubEventPublisherSource + webSubThrottleOutEventPublisherSource),
                         new File(webSubEventPublisherTarget + webSubThrottleOutEventPublisherSource), false);
         serverHost = InetAddress.getLocalHost().getHostName();
-        callbackReceiverPort = MockServerUtils.getAvailablePort(serverHost, false);
-        if (callbackReceiverPort == -1) {
-            throw new APIManagerIntegrationTestException("No available port in the range " +
-                    MockServerUtils.httpPortLowerRange + "-" + MockServerUtils.httpPortUpperRange + " was found");
-        }
-        log.info("Selected port " + callbackReceiverPort + " to start callback receiver");
-        initializeCallbackReceiver(callbackReceiverPort);
+        initializeCallbackReceiver();
         Thread.sleep(5000);
-        callbackReceiverWithSubVerificationPort = MockServerUtils.getAvailablePort(serverHost, false);
-        if (callbackReceiverWithSubVerificationPort == -1) {
-            throw new APIManagerIntegrationTestException(
-                    "No available port in the range " + MockServerUtils.httpPortLowerRange +
-                            "-" + MockServerUtils.httpPortUpperRange + " was found");
-        }
-        log.info("Selected port " + callbackReceiverWithSubVerificationPort + " to start callback receiver");
-        initializeCallbackReceiverWithSubVerification(callbackReceiverWithSubVerificationPort);
+        initializeCallbackReceiverWithSubVerification();
         Thread.sleep(5000);
     }
 
@@ -365,8 +353,12 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(sent, received, "Callback server did not receive all the content distribution requests");
     }
 
-    private void initializeCallbackReceiver(int port) {
-        Server server = new Server(port);
+    private void initializeCallbackReceiver() {
+        Server server = new Server();
+        ServerConnector connector = new ServerConnector(server);
+        connector.setHost(serverHost);
+        server.addConnector(connector);
+
         ServletHandler servletHandler = new ServletHandler();
         server.setHandler(servletHandler);
 
@@ -379,6 +371,9 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
                     ServletHolder servletHolder = new ServletHolder(callbackServerServlet);
                     servletHandler.addServletWithMapping(servletHolder, "/receiver");
                     callbackServer.start();
+                    callbackReceiverPort = connector.getLocalPort();
+                    log.info("Callback server started on port " + callbackReceiverPort + ", while " +
+                            "initializing the test.");
                 } catch (Exception e) {
                     log.error("Failed to start the callback server");
                 }
@@ -386,8 +381,12 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         });
     }
 
-    private void initializeCallbackReceiverWithSubVerification(int port) {
-        Server server = new Server(port);
+    private void initializeCallbackReceiverWithSubVerification() {
+        Server server = new Server();
+        ServerConnector connector = new ServerConnector(server);
+        connector.setHost(serverHost);
+        server.addConnector(connector);
+
         ServletHandler servletHandler = new ServletHandler();
         server.setHandler(servletHandler);
 
@@ -400,6 +399,9 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
                     ServletHolder servletHolder = new ServletHolder(callbackServerServletWithSubVerification);
                     servletHandler.addServletWithMapping(servletHolder, "/receiver");
                     callbackServerWithSubVerification.start();
+                    callbackReceiverWithSubVerificationPort = connector.getLocalPort();
+                    log.info("Callback server with sub verification started on port " +
+                            callbackReceiverWithSubVerificationPort + ", while initializing the test.");
                 } catch (Exception e) {
                     log.error("Failed to start the callback server");
                 }
@@ -445,8 +447,17 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         serverConfigurationManager.restoreToLastConfiguration(false);
-        callbackServer.stop();
-        callbackServerWithSubVerification.stop();
+
+        if(!Server.STOPPED.equals(callbackServer.getState())){
+            callbackServer.stop();
+        }
+        callbackServer.destroy();
+
+        if(!Server.STOPPED.equals(callbackServerWithSubVerification.getState())){
+            callbackServerWithSubVerification.stop();
+        }
+        callbackServerWithSubVerification.destroy();
+
         executorService.shutdownNow();
         super.cleanUp();
     }
