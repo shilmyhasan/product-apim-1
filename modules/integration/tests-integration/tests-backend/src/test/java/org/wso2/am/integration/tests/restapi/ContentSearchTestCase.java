@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
@@ -57,6 +58,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
     private String contentSearchTestAPI = "contentSearchTestAPI";
     private String description = "Unified Search Feature";
     private String apiId;
+    private String documentId;
     private String password = "wso2apim";
     private String user1 = "user1";
     private String user2 = "user2";
@@ -120,6 +122,9 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
                 user.getUserName(), description);
 
         apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+
+        //Add API document
+        documentId = addDocumentToAPI();
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
         restAPIPublisherFirstUser = new RestAPIPublisherImpl(user1, password, user.getUserDomain(), publisherURLHttps);
@@ -187,63 +192,6 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
                     log.warn("Basic content search in store failed. 0 results expected. Received response : "
                             + searchResultListDTO.getCount() + " Retrying...");
                     Thread.sleep(3000);
-                }
-            }
-        }
-    }
-
-    @Test(groups = {
-            "wso2.am" }, description = "Test document content Search", dependsOnMethods = "testContentSearchWithStoreVisibility")
-    public void testDocumentContentSearch() throws Exception {
-        log.info("Document Content Search");
-        String documentName = "Test-Document";
-        String documentContent = "This is a sample API to test unified search feature - github4156";
-        DocumentDTO documentDTO = new DocumentDTO();
-        documentDTO.setName(documentName);
-        documentDTO.setSourceType(DocumentDTO.SourceTypeEnum.INLINE);
-        documentDTO.setType(DocumentDTO.TypeEnum.HOWTO);
-        documentDTO.setSummary("document summary");
-        documentDTO.setVisibility(DocumentDTO.VisibilityEnum.API_LEVEL);
-        HttpResponse documentHttpResponse = restAPIPublisher.addDocument(apiId, documentDTO);
-        assertEquals(documentHttpResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Error while add documentation to API");
-        String documentId = documentHttpResponse.getData();
-        restAPIPublisher.addContentDocument(apiId, documentId, documentContent);
-
-        //check in publisher
-        for (int i = 0; i <= retries; i++) {
-            SearchResultListDTO searchResultListDTO = restAPIPublisher.searchAPIs("github4156");
-            if (searchResultListDTO.getCount() == 1) {
-                Assert.assertTrue(true);
-                break;
-            } else {
-                if (i == retries) {
-                    Assert.fail("Document content search in publisher failed. Received response : " + searchResultListDTO
-                            .getCount());
-                } else {
-                    log.warn("Document content search in publisher failed. Received response : " + searchResultListDTO
-                            .getCount() + " Retrying...");
-                    Thread.sleep(Math.min(3000L * (i + 1), 30000L));
-                }
-            }
-        }
-
-        //check in store
-        for (int i = 0; i <= retries; i++) {
-            //search term : UnifiedSearchFeature, created api has this in description filed
-            org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO searchResultListDTO = restAPIStore
-                    .searchAPIs("github4156");
-            if (searchResultListDTO.getCount() == 1) {
-                Assert.assertTrue(true);
-                break;
-            } else {
-                if (i == retries) {
-                    Assert.fail("Document content search in store failed. Received response : " + searchResultListDTO
-                            .getCount());
-                } else {
-                    log.warn("Document content search in store failed. Received response : " + searchResultListDTO
-                            .getCount() + " Retrying...");
-                    Thread.sleep(Math.min(3000L * (i + 1), 30000L));
                 }
             }
         }
@@ -353,6 +301,50 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
+    @Test(groups = {
+            "wso2.am" }, description = "Test document content Search", dependsOnMethods = "testContentSearchWithStoreVisibility")
+    public void testDocumentContentSearch() throws Exception {
+        log.info("Document Content Search");
+
+        //check in publisher
+        for (int i = 0; i <= retries; i++) {
+            SearchResultListDTO searchResultListDTO = restAPIPublisher.searchAPIs("github4156");
+            if (searchResultListDTO.getCount() == 1) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Document content search in publisher failed. Received response : " + searchResultListDTO
+                            .getCount());
+                } else {
+                    log.warn("Document content search in publisher failed. Received response : " + searchResultListDTO
+                            .getCount() + " Retrying...");
+                    Thread.sleep(Math.min(3000L * (i + 1), 30000L));
+                }
+            }
+        }
+
+        //check in store
+        for (int i = 0; i <= retries; i++) {
+            //search term : UnifiedSearchFeature, created api has this in description filed
+            org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO searchResultListDTO = restAPIStore
+                    .searchAPIs("github4156");
+            if (searchResultListDTO.getCount() == 1) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Document content search in store failed. Received response : " + searchResultListDTO
+                            .getCount());
+                } else {
+                    log.warn("Document content search in store failed. Received response : " + searchResultListDTO
+                            .getCount() + " Retrying...");
+                    Thread.sleep(Math.min(3000L * (i + 1), 30000L));
+                }
+            }
+        }
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
@@ -377,6 +369,21 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
         return apiRequest;
     }
 
-
+    private String addDocumentToAPI() throws ApiException {
+        String documentName = "Test-Document";
+        String documentContent = "This is a sample document - github4156";
+        DocumentDTO documentDTO = new DocumentDTO();
+        documentDTO.setName(documentName);
+        documentDTO.setSourceType(DocumentDTO.SourceTypeEnum.INLINE);
+        documentDTO.setType(DocumentDTO.TypeEnum.HOWTO);
+        documentDTO.setSummary("document summary");
+        documentDTO.setVisibility(DocumentDTO.VisibilityEnum.API_LEVEL);
+        HttpResponse documentHttpResponse = restAPIPublisher.addDocument(apiId, documentDTO);
+        assertEquals(documentHttpResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Error while add documentation to API");
+        String documentId = documentHttpResponse.getData();
+        restAPIPublisher.addContentDocument(apiId, documentId, documentContent);
+        return documentId;
+    }
 }
 
