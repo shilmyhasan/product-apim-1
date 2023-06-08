@@ -88,11 +88,11 @@ public class CallbackServerServletWithSubVerification extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.info("Callback Received");
         message = IOUtils.toString(req.getReader());
         signature = req.getHeader("x-hub-signature");
         setLinkHeader(req.getHeader("link"));
         callbacksReceived.incrementAndGet();
+        log.info("Callback Received. message: " + message + " signature: " + signature);
     }
 
     @Override
