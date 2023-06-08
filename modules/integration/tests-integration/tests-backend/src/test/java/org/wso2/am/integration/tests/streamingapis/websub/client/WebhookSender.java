@@ -69,7 +69,8 @@ public class WebhookSender {
             webhooksSent.incrementAndGet();
             log.info("Webhook sent successfully");
         } else {
-            log.error("Webhook was not successfully sent");
+            log.error("Webhook was not successfully sent. Response code: " + response.getResponseCode() + " Data: "
+                    + response.getData() + " Message: " + response.getResponseMessage());
         }
     }
 
