@@ -552,6 +552,7 @@ public class APIMIntegrationBaseTest {
                 }
             }
             if (!APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME.equals(applicationInfoDTO.getName())) {
+                log.info("Cleaning up application :" + applicationInfoDTO.getName());
                 restAPIStore.deleteApplication(applicationInfoDTO.getApplicationId());
             }
         }
@@ -562,15 +563,21 @@ public class APIMIntegrationBaseTest {
 
         if (apiProductListDTO != null) {
             for(APIProductInfoDTO apiProductInfoDTO : apiProductListDTO) {
+                log.info("Cleaning up API Product :" + apiProductInfoDTO.getName());
                 restAPIPublisher.deleteApiProduct(apiProductInfoDTO.getId());
             }
         }
 
-        APIListDTO apiListDTO = restAPIPublisher.getAllAPIs();
-        if (apiListDTO != null) {
-            for (APIInfoDTO apiInfoDTO: apiListDTO.getList()) {
-                restAPIPublisher.deleteAPI(apiInfoDTO.getId());
+        try {
+            APIListDTO apiListDTO = restAPIPublisher.getAllAPIs();
+            if (apiListDTO != null) {
+                for (APIInfoDTO apiInfoDTO : apiListDTO.getList()) {
+                    log.info("Cleaning up API :" + apiInfoDTO.getName());
+                    restAPIPublisher.deleteAPI(apiInfoDTO.getId());
+                }
             }
+        } catch (APIManagerIntegrationTestException e) {
+            log.error("Error while cleaning up APIs", e);
         }
     }
 

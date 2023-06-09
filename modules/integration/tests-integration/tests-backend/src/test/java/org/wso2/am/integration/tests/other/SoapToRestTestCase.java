@@ -596,7 +596,6 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(soapToRestAPIId, restAPIPublisher);
         restAPIPublisher.deleteAPI(soapToRestAPIId);
         wireMockServer.stop();
-        super.cleanUp();
     }
 
     public static OMElement buildOMElement(String xml) throws Exception {
