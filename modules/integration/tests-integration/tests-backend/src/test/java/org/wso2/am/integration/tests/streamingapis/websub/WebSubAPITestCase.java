@@ -331,6 +331,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         apiDto.setAdditionalProperties(props);
         restAPIPublisher.updateAPI(apiDto, apiId);
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
         callbackServerServlet.setCallbacksReceived(0);
