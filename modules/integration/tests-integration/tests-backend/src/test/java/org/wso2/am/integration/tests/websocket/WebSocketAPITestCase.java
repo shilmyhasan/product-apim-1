@@ -150,13 +150,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 (new File(wsEventPublisherSource + wsThrottleOutEventPublisherSource),
                         new File(wsEventPublisherTarget + wsThrottleOutEventPublisherSource), false);
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
-        webSocketServerPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
-        if (webSocketServerPort == -1) {
-            throw new APIManagerIntegrationTestException("No available port in the range " +
-                    MockServerUtils.httpsPortLowerRange + "-" + MockServerUtils.httpsPortUpperRange + " was found");
-        }
-        log.info("Selected port " + webSocketServerPort + " to start backend server");
-        startWebSocketServer(webSocketServerPort);
+        startWebSocketServer();
     }
 
     @Test(description = "Publish WebSocket API")
@@ -478,25 +472,24 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     /**
      * Starts backend web socket server in given port
-     *
-     * @param serverPort Port that WebSocket Server starts
      */
-    private void startWebSocketServer(final int serverPort) {
+    private void startWebSocketServer() {
         WebSocketHandler wsHandler = new WebSocketHandler() {
-            @Override
-            public void configure(WebSocketServletFactory factory) {
+            @Override public void configure(WebSocketServletFactory factory) {
 
                 factory.register(WebSocketServerImpl.class);
             }
         };
-        server = new Server(serverPort);
+        //Start backend server with random port
+        server = new Server(0);
         server.setHandler(wsHandler);
         try {
             server.start();
-            log.info("WebSocket backend server started at port: " + serverPort);
+            webSocketServerPort = server.getURI().getPort();
+            log.info("WebSocket backend server started at port :" + webSocketServerPort);
         } catch (InterruptedException ignore) {
         } catch (Exception e) {
-            log.error("Error while starting backend server at port: " + serverPort, e);
+            log.error("Error while starting backend server at port: " + webSocketServerPort, e);
             Assert.fail("Cannot start WebSocket server");
         }
     }
