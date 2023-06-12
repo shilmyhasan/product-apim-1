@@ -56,13 +56,13 @@ public class APIInvocationWithMessageTypeProperty extends APIMIntegrationBaseTes
         OMElement synapseConfig = APIMTestCaseUtils.loadResource(file);
         APIMTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 session);
+        wireServer.start();
     }
 
     @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
     @Test(groups = "wso2.am", description = "Test for GET request for an API with in-sequence with messageType "
             + "property")
     public void testInovkeAPIWithMessageTypePropertyInSequence() throws Exception {
-        wireServer.start();
         HttpResponse response = HttpRequestUtil
                 .doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "msgtypeproperty", new HashMap<String, String>());
         Assert.assertNotNull(response, "Error invoking API with in-sequence with messageType property");

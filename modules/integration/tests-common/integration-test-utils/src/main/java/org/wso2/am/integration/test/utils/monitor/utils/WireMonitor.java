@@ -108,11 +108,21 @@ class WireMonitor extends Thread {
                     log.warn("Stream close exception", e);
                 }
             }
+            //Closing connection
             try {
-                connection.close();
-                providerSocket.close();
+                if (connection != null) {
+                    connection.close();
+                }
             } catch (IOException e) {
-                log.warn("Error closing provide socket or connection");
+                log.warn("Error closing socket connection");
+            }
+            //Closing server socket
+            if (providerSocket != null) {
+                try {
+                    providerSocket.close();
+                } catch (IOException e) {
+                    log.warn("Error closing provider socket connection");
+                }
             }
         }
     }
