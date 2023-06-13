@@ -71,11 +71,11 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     private static final String EMAIL_USERNAME = "APIM";
     private static final String EMAIL_PASSWORD = "APIM+123";
     private static final String USER_EMAIL_ADDRESS = "apim@gmail.com";
+    private static final int SMTP_TEST_PORT = 3025;
 
     private static final String FIRST_NAME = "John";
     private static final String ORGANIZATION = "Test";
 
-    private int smtpPort = 0;
     private GreenMail greenMail;
     private String apiId;
     private String newApiId;
@@ -94,22 +94,19 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         storeURLHttp = "https://localhost:9943/";
 
         //Setting greenMail server
-        ServerSetup setup = new ServerSetup(0, "localhost", "smtp");
+        ServerSetup setup = new ServerSetup(SMTP_TEST_PORT, "localhost", "smtp");
         greenMail = new GreenMail(setup);
         //Creating user in greenMail server
         greenMail.setUser(USER_EMAIL_ADDRESS, EMAIL_USERNAME, EMAIL_PASSWORD);
         try {
             greenMail.start();
-            smtpPort = greenMail.getSmtp().getPort();
         } catch (IllegalStateException e) {
             log.warn("There was a problem starting GreenMail server. Retrying in 10 seconds");
             Thread.sleep(10000);
             greenMail.start();
         }
-        if (smtpPort == 0) {
-            throw new APIManagerIntegrationTestException("Unable to obtain free port for GreenMail SMTP server");
-        }
-        log.info("green mail server started on port :" + smtpPort);
+        log.info("green mail server started ");
+
     }
 
     @Test(groups = {"wso2.am"}, description = "Testing Notification Feature")
