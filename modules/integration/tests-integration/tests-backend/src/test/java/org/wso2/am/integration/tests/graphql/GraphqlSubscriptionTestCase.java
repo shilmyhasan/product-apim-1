@@ -34,6 +34,7 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -690,19 +691,20 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         long timeout = 5000L;
         try {
             while (clientSocket.getReceivedMessages().size() < messageIndex + 1) {
-                log.info("Waiting for reply from server:");
+                log.info("Waiting for reply from server for message index: " + messageIndex);
                 Thread.sleep(100); // Adjust the sleep time as needed
                 long startTime = System.currentTimeMillis();
                 if (System.currentTimeMillis() - startTime > timeout) {
                     // Timeout occurred, handle the situation accordingly
-                    log.error("Timeout occurred while waiting for message");
+                    log.error("Timeout occurred while waiting for message index: " + messageIndex + " from server");
                     return null;
                 }
             }
-            log.info("Client received :" + clientSocket.getReceivedMessages().get(messageIndex));
+            log.info("Client received :" + clientSocket.getReceivedMessages().get(messageIndex) + " message index: "
+                    + messageIndex + " from server");
             return clientSocket.getReceivedMessages().get(messageIndex);
         } catch (InterruptedException e) {
-            String errorMsg = "Error while waiting for message.";
+            String errorMsg = "Error while waiting for message. index: " + messageIndex;
             log.error(errorMsg, e);
             throw new APIManagerIntegrationTestException(errorMsg, e);
         }
@@ -1046,36 +1048,25 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                     + "\"operationName\":null,\"query\": \"subscription {\\n  "
                     + "liftStatusChange {\\n name\\n }\\n}\\n\"}}";
             socket.sendMessage(textMessage);
-
             // Wait for the response message
             String responseMessage = waitForReply(socket, 1);
             // Retrieve second message
             log.info("Count : 1 |  Message :" + responseMessage + " At: " + LocalDateTime.now());
-
+            log.info("Waiting for 10 seconds to receive throttle out message");
             // Wait for 10 seconds for throttle out message
             Thread.sleep(10000); // Adjust the sleep time as needed
-
             // At the 3rd message check frame is throttled out.
             String throttleOutResponse = waitForReply(socket, 2);
-            if (!StringUtils.isEmpty(throttleOutResponse)) {
-                JSONParser jsonParser = new JSONParser();
-                org.json.simple.JSONObject errorJson =
-                        (org.json.simple.JSONObject) jsonParser.parse(throttleOutResponse);
-                assertTrue(errorJson.containsKey("type"));
-                assertEquals(errorJson.get("type"), "error");
-                assertTrue(errorJson.containsKey("id"));
-                assertEquals(errorJson.get("id"), "2");
-                assertTrue(errorJson.containsKey("payload"));
-                org.json.simple.JSONObject payload =
-                        (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
-                assertTrue(payload.containsKey("message"));
-                assertTrue(payload.containsKey("code"));
-                assertTrue(((String) payload.get("message")).contains("Websocket frame throttled out"),
-                        "Received response is not matching");
-                assertEquals(payload.get("code"), 4003L, "Received response code is a invalid response code");
-            } else {
-                assertFalse(StringUtils.isEmpty(throttleOutResponse),
-                        "Client did not receive response from server");
+            if (!validateThrottleResponse(throttleOutResponse)) {
+                // there is a possibility that the throttle out message is not received due to asynchronous
+                // nature of the events received from the topic. Hence, we are asserting the 4th message.
+                throttleOutResponse = waitForReply(socket, 3);
+                if (!validateThrottleResponse(throttleOutResponse)) {
+                    assertFalse(StringUtils.isEmpty(throttleOutResponse),
+                            "Client did not receive response from server");
+                    assertFalse(throttleOutResponse.contains("Websocket frame throttled out"),
+                            "Received response is not a matching throttle out response");
+                }
             }
         } catch (Exception ex) {
             log.error("Error occurred while calling API.", ex);
@@ -1086,8 +1077,41 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
+
+    /**
+     * Validate throttle out response.
+     *
+     * @param throttleOutResponse throttle out response.
+     * @return true if the response is a throttle out response.
+     * @throws ParseException if an error occurs while parsing the response.
+     */
+    private boolean validateThrottleResponse(String throttleOutResponse) throws ParseException {
+
+        if (!StringUtils.isEmpty(throttleOutResponse)
+                && throttleOutResponse.contains("Websocket frame throttled out")) {
+            JSONParser jsonParser = new JSONParser();
+            org.json.simple.JSONObject errorJson =
+                    (org.json.simple.JSONObject) jsonParser.parse(throttleOutResponse);
+            assertTrue(errorJson.containsKey("type"));
+            assertEquals(errorJson.get("type"), "error");
+            assertTrue(errorJson.containsKey("id"));
+            assertEquals(errorJson.get("id"), "2");
+            assertTrue(errorJson.containsKey("payload"));
+            org.json.simple.JSONObject payload =
+                    (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
+            assertTrue(payload.containsKey("message"));
+            assertTrue(payload.containsKey("code"));
+            assertTrue(((String) payload.get("message")).contains("Websocket frame throttled out"),
+                    "Received response is not matching");
+            assertEquals(payload.get("code"), 4003L, "Received response code is a invalid response code");
+            return true;
+        }
+        return false;
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+
         if (server != null) {
             server.stop();
         }

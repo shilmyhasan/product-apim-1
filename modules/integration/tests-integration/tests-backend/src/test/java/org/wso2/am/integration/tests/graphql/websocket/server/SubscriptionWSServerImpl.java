@@ -54,13 +54,9 @@ public class SubscriptionWSServerImpl {
                         String messageId = (String) clientMessage.get("id");
                         if ("2".equals(messageId)) {
                             isThrottleInitRequest = true;
-                            response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
-                                    + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
-                            session.getRemote().sendString(response);
-                            Thread.sleep(5000L);
-                            response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
-                                    + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
-                            session.getRemote().sendString(response);
+                            for (int i = 0; i < 3; i++) {
+                                sendResponseForThrottling(session, i);
+                            }
                         } else {
                             response = "{\"type\":\"data\",\"id\":\"1\",\"payload\":{\"data\":"
                                     + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
@@ -71,6 +67,7 @@ public class SubscriptionWSServerImpl {
                 }
                 if (!isThrottleInitRequest) {
                     session.getRemote().sendString(response);
+                    log.info("Server sent message:" + response);
                 }
             } catch (ParseException e) {
                 log.error("Invalid json message received to GraphQL Subscription backend: " + message);
@@ -79,6 +76,15 @@ public class SubscriptionWSServerImpl {
                 Assert.fail("Error handling response for throttling");
             }
         }
+    }
+
+    private void sendResponseForThrottling(Session session, int count) throws IOException, InterruptedException {
+
+        String response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
+                + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
+        session.getRemote().sendString(response);
+        log.info("Server sent message:" + response + " for count: " + count);
+        Thread.sleep(5000L);
     }
 
     @OnWebSocketConnect
