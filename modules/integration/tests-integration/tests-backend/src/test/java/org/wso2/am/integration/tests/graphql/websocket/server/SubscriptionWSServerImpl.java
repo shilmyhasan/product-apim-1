@@ -54,12 +54,13 @@ public class SubscriptionWSServerImpl {
                         String messageId = (String) clientMessage.get("id");
                         if ("2".equals(messageId)) {
                             isThrottleInitRequest = true;
-                            for (int i = 1; i < 5; i++) {
-                                response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
-                                        + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
-                                Thread.sleep(300L);
-                                session.getRemote().sendString(response);
-                            }
+                            response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
+                                    + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
+                            session.getRemote().sendString(response);
+                            Thread.sleep(5000L);
+                            response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
+                                    + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
+                            session.getRemote().sendString(response);
                         } else {
                             response = "{\"type\":\"data\",\"id\":\"1\",\"payload\":{\"data\":"
                                     + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
