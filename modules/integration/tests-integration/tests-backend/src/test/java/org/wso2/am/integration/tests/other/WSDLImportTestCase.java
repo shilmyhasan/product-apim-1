@@ -291,14 +291,13 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         File file = new File(wsdlDefinitionPath);
 
         try{
-            APIDTO wsdlFileApidto = restAPIPublisher
-                    .importWSDLSchemaDefinition(file, null, additionalPropertiesObj.toString(), "SOAP");
+            APIDTO wsdlFileApidto = restAPIPublisher.importWSDLSchemaDefinition(file, null,
+                    additionalPropertiesObj.toString(), "SOAP");
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode());
-            Assert.assertTrue(e.getResponseBody().contains(
-                    APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR));
-
+            Assert.assertTrue(e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR));
         }
+
     }
 
     @Test(groups = {"wso2.am"}, description = "Get WSDL API definition of the created API",
