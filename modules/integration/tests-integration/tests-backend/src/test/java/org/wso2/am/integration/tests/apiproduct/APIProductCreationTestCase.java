@@ -76,6 +76,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     private static final String SCOPE = "restricted_scope";
     private ApiTestHelper apiTestHelper;
     private ApiProductTestHelper apiProductTestHelper;
+    private String apiID1;
+    private String apiID2;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIProductCreationTestCase(TestUserMode userMode) {
@@ -208,6 +210,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         APIDTO apiTwo = apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources"));
         apisToBeUsed.add(apiOne);
         apisToBeUsed.add(apiTwo);
+        apiID1 = apiOne.getId();
+        apiID2 = apiTwo.getId();
 
         // Step 1 : Create APIProduct
         final String provider = user.getUserName();
@@ -611,6 +615,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         userManagementClient.deleteUser(RESTRICTED_SUBSCRIBER);
         userManagementClient.deleteUser(STANDARD_SUBSCRIBER);
         userManagementClient.deleteRole(RESTRICTED_ROLE);
+        restAPIPublisher.deleteAPI(apiID1);
+        restAPIPublisher.deleteAPI(apiID2);
     }
 
     private HttpResponse invokeWithGet(String url, Map<String, String> headers) throws IOException {
