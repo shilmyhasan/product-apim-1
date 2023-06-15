@@ -45,12 +45,14 @@ import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.InvocationStatusCodes;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -196,6 +198,33 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 "/customers", requestHeadersGet);
         Assert.assertEquals(httpResponse.getResponseCode(), 200);
         Assert.assertEquals(httpResponse.getHeaders().get("Version"), "v2");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test creation of API Product with malformed context")
+    public void testCreateApiProductWithMalformedContext() throws Exception {
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        APIDTO apiOne = apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIDTO apiTwo = apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        apisToBeUsed.add(apiOne);
+        apisToBeUsed.add(apiTwo);
+
+        // Step 1 : Create APIProduct
+        final String provider = user.getUserName();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString() + "{version}" ;
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        try{
+            apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+                    apisToBeUsed, policies);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode());
+            Assert.assertTrue(e.getResponseBody().contains(
+                    APIMIntegrationConstants.API_PRODUCT_CONTEXT_MALFORMED_ERROR));
+
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
