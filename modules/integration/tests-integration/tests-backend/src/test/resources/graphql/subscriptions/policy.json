@@ -6,7 +6,7 @@
     "type": "REQUESTCOUNTLIMIT",
     "requestCount": {
       "requestCount": 2,
-      "timeUnit": "min",
+      "timeUnit": "hour",
       "unitTime": 1
     }
   }

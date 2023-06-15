@@ -27,6 +27,8 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 @WebSocket
@@ -36,11 +38,14 @@ public class SubscriptionWSClientImpl {
     private final Log log = LogFactory.getLog(SubscriptionWSClientImpl.class);
     private String responseMessage;
 
+    private List<String> receivedMessages = new ArrayList<>();
+
     private final CountDownLatch latch = new CountDownLatch(1);
 
     @OnWebSocketMessage
     public void onText(Session session, String message) {
         this.setResponseMessage(message);
+        this.receivedMessages.add(message);
         log.info("Client received message:" + message);
     }
 
@@ -73,5 +78,13 @@ public class SubscriptionWSClientImpl {
 
     public void setResponseMessage(String responseMessage) {
         this.responseMessage = responseMessage;
+    }
+
+    public List<String> getReceivedMessages() {
+        return receivedMessages;
+    }
+
+    public void clearReceivedMessages() {
+        this.receivedMessages.clear();
     }
 }
