@@ -102,6 +102,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
@@ -256,6 +257,21 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+    public HttpResponse addAPIWithMalformedContext(APIRequest apiRequest) {
+
+        String osVersion = "v3";
+        setActivityID();
+        HttpResponse response = null;
+        try {
+            this.addAPI(apiRequest, osVersion);
+        } catch (ApiException e) {
+            response = new HttpResponse(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR, e.getCode());
+            return response;
+        }
+        return null;
+
+    }
+
     /**
      * \
      * This method is used to create an API.
@@ -359,6 +375,9 @@ public class RestAPIPublisherImpl {
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
+            }
+            if (e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR)) {
+                throw new ApiException(e.getCode(), APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR);
             }
             throw new ApiException(e);
         }
@@ -1197,6 +1216,21 @@ public class RestAPIPublisherImpl {
         ApiResponse<Void> schemaDefinitionDTO = graphQlSchemaApi.updateAPIGraphQLSchemaWithHttpInfo
                 (apiId, schemaDefinition, null);
         Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
+    }
+
+    public HttpResponse importGraphqlSchemaDefinitionWithInvalidContext(File file, String properties) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = null;
+        HttpResponse response = null;
+        try {
+            apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
+                    file, properties);
+            Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR)) {
+                response = new HttpResponse(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR, e.getCode());
+            }
+        }
+        return response;
     }
 
     public WSDLValidationResponseDTO validateWsdlDefinition(String url, File wsdlDefinition) throws ApiException {

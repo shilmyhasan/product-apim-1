@@ -94,6 +94,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         QUERY
     }
     private final String apiName = "WebSocketAPI";
+    private final String apiNameWithMalformedContext = "WebSocketAPIWithMalformedContext";
     private final String applicationName = "WebSocketApplication";
     private final String applicationJWTName = "WebSocketJWTTypeApplication";
     private final String testMessage = "Web Socket Test Message";
@@ -448,6 +449,30 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         } finally {
             client.stop();
         }
+    }
+
+    @Test(description = "Create WebSocket API with malformed context",
+            dependsOnMethods = "testWebSocketAPIRemoveEndpoint")
+    public void testCreateWebSocketAPIWithMalformedContext() throws Exception {
+
+        provider = user.getUserName();
+        String apiContext = "echo{version}";
+        String apiVersion = "1.0.0";
+
+        URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
+
+        //Create the api creation request object
+        apiRequest = new APIRequest(apiNameWithMalformedContext, apiContext, endpointUri, endpointUri);
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
+        apiRequest.setProvider(provider);
+        apiRequest.setType("WS");
+        apiRequest.setApiTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        HttpResponse response = restAPIPublisher.addAPIWithMalformedContext(apiRequest);
+        Assert.assertEquals(response.getResponseCode(), 400, "Response Code miss matched when creating the API");
+
+
     }
 
     /**
