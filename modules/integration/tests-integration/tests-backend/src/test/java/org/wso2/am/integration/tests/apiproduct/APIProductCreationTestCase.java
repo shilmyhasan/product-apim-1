@@ -611,12 +611,13 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
+        restAPIPublisher.deleteAPI(apiID1);
+        restAPIPublisher.deleteAPI(apiID2);
+
         super.cleanUp();
         userManagementClient.deleteUser(RESTRICTED_SUBSCRIBER);
         userManagementClient.deleteUser(STANDARD_SUBSCRIBER);
         userManagementClient.deleteRole(RESTRICTED_ROLE);
-        restAPIPublisher.deleteAPI(apiID1);
-        restAPIPublisher.deleteAPI(apiID2);
     }
 
     private HttpResponse invokeWithGet(String url, Map<String, String> headers) throws IOException {
