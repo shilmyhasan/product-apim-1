@@ -434,4 +434,11 @@
             <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.ConfigurableDefaultPolicyTestCase"/>
         </classes>
     </test>
+
+    <test name="apim-integration-tests-mandatory-properties-with-restart" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.MandatoryPropertiesTestWithRestart"/>
+        </classes>
+    </test>
 </suite>
