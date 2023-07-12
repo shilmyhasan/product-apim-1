@@ -27,7 +27,6 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesMapDTO;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
@@ -91,10 +90,6 @@ public class MandatoryPropertiesTestWithRestart extends APIManagerLifecycleBaseT
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setTier("Gold");
 
-        restAPIPublisher = new RestAPIPublisherImpl(
-                publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
         HttpResponse response = restAPIPublisher.addAPI(apiCreationRequestBean);
         apiId = response.getData();
         APIDTO apiDto = restAPIPublisher.getAPIByID(apiId);
