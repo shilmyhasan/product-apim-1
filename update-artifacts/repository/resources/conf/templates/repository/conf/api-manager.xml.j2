@@ -80,6 +80,14 @@
         <!-- This parameter specifies which implementation should be used for generating the Token. For URL safe JWT
              Token generation the implementation is provided in URLSafeJWTGenerator -->
         <!--<JWTGeneratorImpl>org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator</JWTGeneratorImpl>-->
+
+        <!-- Set the JWT decoding method. Options are "base64url" or "base64". The default value is "base64". -->
+        {% if apim.jwt.decoding %}
+        <JWTDecoding>{{apim.jwt.decoding}}</JWTDecoding>
+        {% elif apim.jwt.encoding %}
+        <JWTDecoding>{{apim.jwt.encoding}}</JWTDecoding>
+        {% endif %}
+
        {% if apim.jwt.enable_tenant_based_signing is defined %}
         <EnableTenantBasedSigning>{{apim.jwt.enable_tenant_based_signing}}</EnableTenantBasedSigning>
         {% endif %}
@@ -1356,6 +1364,12 @@
         {% if apim.sync_runtime_artifacts.gateway.deployment_retry_duration is defined %}
         <RetryDuration>{{apim.sync_runtime_artifacts.gateway.deployment_retry_duration}}</RetryDuration>
         {% endif %}
+        {% if apim.sync_runtime_artifacts.gateway.max_retry_count is defined %}
+        <MaxRetryCount>{{apim.sync_runtime_artifacts.gateway.max_retry_count}}</MaxRetryCount>
+        {% endif %}
+        {% if apim.sync_runtime_artifacts.gateway.retry_progression_factor is defined %}
+        <RetryProgressionFactor>{{apim.sync_runtime_artifacts.gateway.retry_progression_factor}}</RetryProgressionFactor>
+        {% endif %}
         {% if apim.sync_runtime_artifacts.gateway.data_retrieval_mode is defined %}
         <DataRetrievalMode>{{apim.sync_runtime_artifacts.gateway.data_retrieval_mode}}</DataRetrievalMode>
         {% endif %}
@@ -1456,5 +1470,24 @@
                  <ExpiresIn>{{apim.mediator_config.oauth.expires_in}}</ExpiresIn>
              </OAuth>
           </MediatorConfigs>
+      {% endif %}
+
+      {% if apim.publisher.custom_properties is defined %}
+        <PropertyConfigurations>
+            <CustomProperties>
+                {% for property in apim.publisher.custom_properties %}
+                <Property Required="{{property.required}}" Hidden="{{property.hidden}}">
+                    <Name>{{property.name}}</Name>
+                    <Description>{{property.description}}</Description>
+                    <Default>{{property.default}}</Default>
+                </Property>
+                {% endfor %}
+            </CustomProperties>
+        </PropertyConfigurations>
+      {% endif %}
+
+      <!-- Specifies whether API level policy support feature should be enabled or not. -->
+      {% if apim.policy is defined %}
+        <EnableAPIPolicies>{{apim.policy.enable_api_level_policies}}</EnableAPIPolicies>
       {% endif %}
 </APIManager>
