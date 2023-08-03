@@ -18,12 +18,20 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="org.wso2.carbon.identity.captcha.util.CaptchaUtil" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApiException" %>
+<%@ page import="org.wso2.carbon.identity.base.IdentityRuntimeException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.constants.SelfRegistrationStatusCodes" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.api.ReCaptchaApi" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.ReCaptchaProperties" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementServiceUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.User" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
+<%@ page import="java.util.Arrays" %>
+<%@ page import="java.util.HashMap" %>
 <%@ page import="java.io.File" %>
+<%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 
 <jsp:directive.include file="includes/localize.jsp"/>
@@ -55,6 +63,44 @@
         errorMsg = errorMsgObj.toString();
     }
     boolean skipSignUpEnableCheck = Boolean.parseBoolean(request.getParameter("skipsignupenablecheck"));
+
+    ReCaptchaApi reCaptchaApi = new ReCaptchaApi();
+    try {
+        ReCaptchaProperties reCaptchaProperties = null;
+        if (request.getParameter("tenantDomain") == null && user != null && StringUtils.isNotEmpty(user.getTenantDomain())) {
+            try {
+                IdentityTenantUtil.getTenantId(user.getTenantDomain());
+                reCaptchaProperties = reCaptchaApi.getReCaptcha(user.getTenantDomain(), true, "ReCaptcha", "self-registration");
+            } catch (IdentityRuntimeException e) {
+                request.setAttribute("error", true);
+                request.setAttribute("errorMsg", e.getMessage());
+                request.getRequestDispatcher("error.jsp").forward(request, response);
+                return;
+            }
+        } else if (request.getParameter("tenantDomain") != null ) {
+            reCaptchaProperties = reCaptchaApi.getReCaptcha(tenantDomain, true, "ReCaptcha", "self-registration");
+        }
+        if (reCaptchaProperties != null && reCaptchaProperties.getReCaptchaEnabled()) {
+            Map<String, List<String>> headers = new HashMap<>();
+            headers.put("reCaptcha", Arrays.asList(String.valueOf(true)));
+            headers.put("reCaptchaAPI", Arrays.asList(reCaptchaProperties.getReCaptchaAPI()));
+            headers.put("reCaptchaKey", Arrays.asList(reCaptchaProperties.getReCaptchaKey()));
+            IdentityManagementEndpointUtil.addReCaptchaHeaders(request, headers);
+        }
+    } catch (ApiException e) {
+        IdentityManagementEndpointUtil.addErrorInformation(request, e);
+        request.getRequestDispatcher("error.jsp").forward(request, response);
+        return;
+    }
+%>
+
+<%
+    boolean reCaptchaEnabled = false;
+    if (request.getAttribute("reCaptcha") != null && "TRUE".equalsIgnoreCase((String) request.getAttribute("reCaptcha"))) {
+        reCaptchaEnabled = true;
+    } else if (request.getParameter("reCaptcha") != null && Boolean.parseBoolean(request.getParameter("reCaptcha"))) {
+        reCaptchaEnabled = true;
+    }
 %>
 
 <!doctype html>
@@ -69,6 +115,14 @@
     <% } else { %>
     <jsp:directive.include file="includes/header.jsp"/>
     <% } %>
+    <%
+        if (reCaptchaEnabled) {
+            String reCaptchaAPI = CaptchaUtil.reCaptchaAPIURL();
+    %>
+    <script src='<%=(reCaptchaAPI)%>'></script>
+    <%
+        }
+    %>
 </head>
 <body class="login-portal layout recovery-layout">
     <main class="center-segment">
@@ -121,13 +175,29 @@
                         <% Map<String, String[]> requestMap = request.getParameterMap();
                             for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
                                 String key = Encode.forHtmlAttribute(entry.getKey());
-                                String value = Encode.forHtmlAttribute(entry.getValue()[0]); %>
+                                String value = Encode.forHtmlAttribute(entry.getValue()[0]);
+                                if (StringUtils.equalsIgnoreCase("reCaptcha", key)) {
+                                    continue;
+                                } %>
                         <div class="field">
                             <input id="<%= key%>" name="<%= key%>" type="hidden"
                                    value="<%=value%>" class="form-control">
                         </div>
                         <% } %>
-
+                        <div class="field">
+                            <%
+                                if (reCaptchaEnabled) {
+                                    String reCaptchaKey = CaptchaUtil.reCaptchaSiteKey();
+                            %>
+                            <div class="field">
+                                <div class="g-recaptcha"
+                                    data-sitekey="<%=Encode.forHtmlContent(reCaptchaKey)%>">
+                                </div>
+                            </div>
+                            <%
+                                }
+                            %>
+                        </div>
                         <div class="ui divider hidden"></div>
 
                         <div class="align-right buttons">
