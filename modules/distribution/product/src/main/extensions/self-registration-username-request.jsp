@@ -239,5 +239,63 @@
     <jsp:directive.include file="includes/footer.jsp"/>
     <% } %>
 
+    <script>
+        var $registerForm = $("#register");
+        // Reloads the page if the page is loaded by going back in history.
+        // Fixes issues with Firefox.
+        window.addEventListener( "pageshow", function ( event ) {
+            var historyTraversal = event.persisted ||
+                                ( typeof window.performance != "undefined" &&
+                                    window.performance.navigation.type === 2 );
+            if ( historyTraversal ) {
+                if($registerForm){
+                    $registerForm.data("submitted", false);
+                }
+            }
+        });
+        function goBack() {
+            window.history.back();
+        }
+        // Handle form submission preventing double submission.
+        $(document).ready(function(){
+            $.fn.preventDoubleSubmission = function() {
+                $(this).on("submit", function(e){
+                    var $form = $(this);
+                    if ($form.data("submitted") === true) {
+                        // Previously submitted - don't submit again.
+                        e.preventDefault();
+                        console.warn("Prevented a possible double submit event");
+                    } else {
+                        e.preventDefault();
+                           <%
+                                if(reCaptchaEnabled) {
+                           %>
+                           var resp = $("[name='g-recaptcha-response']")[0].value;
+                           if (resp.trim() == '') {
+                                $("#server-error-msg").remove();
+                                error_msg.text("<%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
+                                    "Please.select.reCaptcha")%>");
+                                error_msg.show();
+                                $("html, body").animate({scrollTop: error_msg.offset().top}, 'slow');
+                                return false;
+                           }
+                           <%
+                                }
+                           %>
+                        var userName = document.getElementById("username");
+                        var usernameUserInput = document.getElementById("usernameUserInput");
+                        if (usernameUserInput) {
+                            userName.value = usernameUserInput.value.trim();
+                        }
+                        // Mark it so that the next submit can be ignored.
+                        $form.data("submitted", true);
+                        document.getElementById("register").submit();
+                    }
+                });
+                return this;
+            };
+            $registerForm.preventDoubleSubmission();
+        });
+    </script>
 </body>
 </html>
