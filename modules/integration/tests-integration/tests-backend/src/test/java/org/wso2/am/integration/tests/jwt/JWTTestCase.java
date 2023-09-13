@@ -28,6 +28,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -76,6 +77,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.ws.rs.core.Response;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -107,6 +109,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     URL tokenEndpointURL;
     private String tokenURL;
     private String identityLoginURL;
+    private String jwksKidClaim;
     private final String CALLBACK_URL = "https://localhost:9443/store/";
 
     @BeforeClass(alwaysRun = true)
@@ -191,6 +194,16 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
         waitForAPIDeploymentSync(user.getUserName(), api2Request.getName(), api2Request.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        // Invoke JWKS endpoint and retrieve kid claim to validate backend JWT
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet jwksGet = new HttpGet(getAPIInvocationURLHttp("jwks"));
+        HttpResponse jwksResponse = httpclient.execute(jwksGet);
+        assertEquals(jwksResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Invocation fails for JWKS GET request");
+        String jwksResponseString = EntityUtils.toString(jwksResponse.getEntity(), "UTF-8");
+        JSONObject jwksResponseObject = new JSONObject(jwksResponseString);
+        jwksKidClaim = jwksResponseObject.getJSONArray("keys").getJSONObject(0).getString("kid");
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for Oauth Based App")
@@ -210,7 +223,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
             get.addHeader("Authorization", "Bearer " + tokenJti);
             HttpResponse response = httpclient.execute(get);
-            Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+            assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched when api invocation");
 
             Header[] responseHeaders = response.getAllHeaders();
@@ -225,7 +238,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             //Do the signature verification for super tenant as tenant key store not there accessible
             BackendJWTUtil.verifySignature(jwtheader);
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
+            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString, jwksKidClaim);
             JSONObject jsonObject = new JSONObject(decodedJWTString);
             log.info("JWT Received ==" + jsonObject.toString());
             //Validate expiry time
@@ -257,7 +270,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
             get.addHeader("Authorization", "Bearer " + accessToken);
             HttpResponse response = httpclient.execute(get);
-            Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+            assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched when api invocation");
 
             Header[] responseHeaders = response.getAllHeaders();
@@ -273,7 +286,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             //Do the signature verification
             BackendJWTUtil.verifySignature(jwtheader);
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
+            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString, jwksKidClaim);
             JSONObject jsonObject = new JSONObject(decodedJWTString);
 
             // check default claims
@@ -305,7 +318,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(api2Context, apiVersion));
         get.addHeader("apikey", apiKeyDTO.getApikey());
         HttpResponse response = httpclient.execute(get);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+        assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 
         //check JWT headers
@@ -326,7 +339,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
         get.addHeader("apikey", apiKeyDTO.getApikey());
         HttpResponse response = httpclient.execute(get);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+        assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 
         //check JWT headers
@@ -341,7 +354,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         //Do the signature verification
         BackendJWTUtil.verifySignature(jwtheader);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-        BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
+        BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString, jwksKidClaim);
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
         // check default claims
@@ -370,7 +383,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
         get.addHeader("Authorization", "Bearer " + accessToken);
         HttpResponse response = httpclient.execute(get);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+        assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 
         Header[] responseHeaders = response.getAllHeaders();
@@ -386,7 +399,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         //Do the signature verification
         BackendJWTUtil.verifySignature(jwtheader);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-        BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
+        BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString, jwksKidClaim);
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
         // check default claims
@@ -418,7 +431,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
             get.addHeader("Authorization", "Bearer " + tokenJti);
             HttpResponse response = httpclient.execute(get);
-            Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+            assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched when api invocation");
 
             Header[] responseHeaders = response.getAllHeaders();
@@ -434,7 +447,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             //Do the signature verification
             BackendJWTUtil.verifySignature(jwtheader);
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
+            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString, jwksKidClaim);
             JSONObject jsonObject = new JSONObject(decodedJWTString);
 
             // check default claims
@@ -599,7 +612,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         String url = identityLoginURL + "?response_type=code&" + "client_id=" + consumerKey + "&scope=" + Strings
                 .join(" ", scopes) + "&redirect_uri=" + CALLBACK_URL;
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse res = HTTPSClientUtils.doGet(url, headers);
-        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
+        assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
         String LOCATION_HEADER = "Location";
         String locationHeader = res.getHeaders().get(LOCATION_HEADER);
         Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
@@ -619,7 +632,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         urlParameters.add(new BasicNameValuePair("sessionDataKey", sessionDataKey));
 
         res = HTTPSClientUtils.doPost(identityLoginURL, headers, urlParameters);
-        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
+        assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
         locationHeader = res.getHeaders().get(LOCATION_HEADER);
         Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
         String sessionDataKeyConsent = getURLParameter(locationHeader, "sessionDataKeyConsent");
@@ -635,7 +648,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         urlParameters.add(new BasicNameValuePair("sessionDataKeyConsent", sessionDataKeyConsent));
 
         res = HTTPSClientUtils.doPost(identityLoginURL, headers, urlParameters);
-        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
+        assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
         locationHeader = res.getHeaders().get(LOCATION_HEADER);
         Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
         String tempCode = getURLParameter(locationHeader, "code");
@@ -652,7 +665,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         urlParameters.add(new BasicNameValuePair("client_id", consumerKey));
 
         res = HTTPSClientUtils.doPost(tokenURL, headers, urlParameters);
-        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        assertEquals(res.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
         JSONObject response = new JSONObject(res.getData());
         String accessToken = response.getString("access_token");
         Assert.assertNotNull(accessToken, "Couldn't found accessToken");
