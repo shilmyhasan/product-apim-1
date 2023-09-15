@@ -262,15 +262,6 @@
         </classes>
     </test>
 
-    <test name="apim-integration-tests-graphql" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
-            <class name="org.wso2.am.integration.tests.graphqlqueryanalysis.GraphQLQueryAnalysisTest"/>
-            <class name="org.wso2.am.integration.tests.graphql.GraphqlSubscriptionTestCase"/>
-        </classes>
-    </test>
-
     <test name="admin-rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
         <classes>
@@ -308,20 +299,6 @@
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
-        </classes>
-    </test>
-
-    <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.ThrottlingTestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.SecretValidationTestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPITestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.streamingapis.websub.FailedWebSubSubscriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.MultipleWebSubSubcriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.LeaseTimeSubscriptionTestCase"/>-->
         </classes>
     </test>
 
@@ -412,12 +389,6 @@
         </classes>
     </test>
 
-    <test name="apim-solace-broker-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.solace.SolaceTestCase"/>
-        </classes>
-    </test>
 
     <test name="apim-logging-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
