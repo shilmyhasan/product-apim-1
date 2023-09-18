@@ -27,7 +27,6 @@
     </test>
 
     <test name="apim-integration-tests-graphql" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
             <class name="org.wso2.am.integration.tests.graphqlqueryanalysis.GraphQLQueryAnalysisTest"/>
@@ -36,7 +35,6 @@
     </test>
 
     <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
         <classes>
             <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
@@ -50,14 +48,12 @@
     </test>
 
     <test name="apim-solace-broker-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
         <classes>
             <class name="org.wso2.am.integration.tests.solace.SolaceTestCase"/>
         </classes>
     </test>
 
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>

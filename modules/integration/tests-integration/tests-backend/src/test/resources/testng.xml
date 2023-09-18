@@ -63,7 +63,7 @@
     </test>-->
 
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
@@ -115,7 +115,7 @@
     </test>
 
     <test name="apim-email-secondary-userstore-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.restapi.ThumbnailSearchTestCase"/> -->
@@ -143,7 +143,7 @@
     </test>
 
     <test name="apim-CORS-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderSetup"/>
             <class name="org.wso2.am.integration.tests.jwt.FederatedUserJWTTestCase"/>
@@ -152,14 +152,13 @@
     </test>
 
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.rest.UriTemplateReservedCharacterEncodingTest"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.login.APIMANAGER2611oginTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>-->
+<!--            <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.URLSafeJWTTestCase"/>-->
@@ -169,19 +168,22 @@
             <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
             <!--Un comment following test case when carbon.analytics.common.version updated to 5.1.5-->
-            <!--<class name="org.wso2.am.integration.tests.other.CANALYTCOM8PeriodicDataEndpointExceptionTestCase"/>-->
             <!--https://github.com/wso2/product-apim/issues/6885-->
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>
-            <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
-            <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
-            <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
+            <!-- <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
             <class name="org.wso2.am.integration.tests.header.APIMANAGER3614DuplicateTransferEncodingHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.header.ESBJAVA3447PreserveCharsetInContentTypeTestCase"/>
             <!--class name="org.wso2.am.integration.tests.header.ESBJAVA5121CheckAuthHeaderOrderTestCase"/-->
             <!--<class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>-->
+        </classes>
+    </test>
+
+    <test name="apim-integration-sample-test-2" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group4"></parameter>
+        <classes>
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.WSDLImportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SoapToRestTestCase"/>
@@ -195,7 +197,7 @@
     </test>
 
     <test name="apim-publisher-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.prototype.PrototypedAPITestcase"/>
             <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
@@ -226,7 +228,7 @@
     </test>
 
     <test name="apim-store-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>-->
@@ -263,7 +265,7 @@
     </test>
 
     <test name="admin-rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group2"/>
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ApplicationThrottlingPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.SubscriptionThrottlingPolicyTestCase"/>
@@ -295,7 +297,7 @@
         </classes>
     </test>
     <test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
@@ -303,7 +305,7 @@
     </test>
 
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
@@ -347,7 +349,7 @@
     </test>
 
     <test name="apim-integration-tests-endpoint-security" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityPerTypeTestCase"/>
@@ -398,7 +400,7 @@
     </test>
 
     <test name="apim-unlimited-tier-disabled-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
+        <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.UnlimitedTierDisabledConfig"/>
             <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.UnlimitedTierDisabledTestCase"/>
