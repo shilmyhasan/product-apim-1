@@ -394,4 +394,10 @@
         </classes>
     </test>
      -->
+    <test name="apim-integration-tests-config-changes" preserve-order="true" parallel="false">
+
+        <classes>
+            <class name="org.wso2.am.integration.tests.token.TokenRenewWithoutRevokingExisting"/>
+        </classes>
+    </test>
 </suite>
