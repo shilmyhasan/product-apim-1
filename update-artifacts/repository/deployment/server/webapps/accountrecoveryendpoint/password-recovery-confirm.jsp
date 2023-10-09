@@ -26,6 +26,9 @@
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.CodeValidationRequest" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.Property" %>
 <%@ page import="org.wso2.carbon.identity.core.util.IdentityTenantUtil" %>
+<%@ page import="org.wso2.carbon.identity.recovery.util.Utils" %>
+<%@ page import="org.wso2.carbon.identity.recovery.IdentityRecoveryConstants" %>
+<%@ page import="org.wso2.carbon.identity.base.IdentityRuntimeException" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.List" %>
 <%@ page import="javax.ws.rs.HttpMethod" %>
@@ -47,6 +50,23 @@
     if (StringUtils.isBlank(callback)) {
         callback = request.getParameter("redirect_uri");
     }
+
+    try {
+        if (StringUtils.isNotBlank(callback) && !Utils.validateCallbackURL(callback, tenantDomain,
+            IdentityRecoveryConstants.ConnectorConfig.RECOVERY_CALLBACK_REGEX)) {
+            request.setAttribute("error", true);
+            request.setAttribute("errorMsg", IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
+                "Callback.url.format.invalid"));
+            request.getRequestDispatcher("error.jsp").forward(request, response);
+            return;
+        }
+    } catch (IdentityRuntimeException e) {
+        request.setAttribute("error", true);
+        request.setAttribute("errorMsg", e.getMessage());
+        request.getRequestDispatcher("error.jsp").forward(request, response);
+        return;
+    }
+
     NotificationApi notificationApi = new NotificationApi();
     try {
         List<Property> properties = new ArrayList<>();
