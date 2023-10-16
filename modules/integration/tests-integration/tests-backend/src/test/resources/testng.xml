@@ -118,7 +118,7 @@
         <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.restapi.ThumbnailSearchTestCase"/> -->
+            <class name="org.wso2.am.integration.tests.restapi.ThumbnailSearchTestCase"/>
             <class name="org.wso2.am.integration.tests.other.PublisherAccessControlTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.other.DevPortalVisibilityTestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
@@ -166,6 +166,12 @@
             <!--class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
+        </classes>
+    </test>
+
+    <test name="apim-integration-test-sample-2" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
             <!--Un comment following test case when carbon.analytics.common.version updated to 5.1.5-->
             <!--https://github.com/wso2/product-apim/issues/6885-->
@@ -321,8 +327,6 @@
         </classes>
     </test>
 
-
-
     <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
         <classes>
@@ -390,7 +394,6 @@
             <class name="org.wso2.am.integration.tests.crossSubscription.CrossTenantSubscriptionTestCase"/>
         </classes>
     </test>
-
 
     <test name="apim-logging-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
