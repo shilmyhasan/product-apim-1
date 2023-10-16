@@ -105,7 +105,8 @@ public class SOAPAPIImportExportTestCase extends APIManagerLifecycleBaseTest {
         wsdlDefinition = readFile(
                 getAMResourceLocation() + File.separator + "soap" + File.separator + "phoneverify.wsdl");
         responseBody = readFile(
-                getAMResourceLocation() + File.separator + "soap" + File.separator + "checkPhoneNumberResponseBody" + ".xml");
+                getAMResourceLocation() + File.separator + "soap" + File.separator +
+                        "checkPhoneNumberResponseBody" + ".xml");
 
         //Start wiremock server
         startWiremockServer();
@@ -152,16 +153,19 @@ public class SOAPAPIImportExportTestCase extends APIManagerLifecycleBaseTest {
 
         // Initialize the required variables
         exportUrl =
-                publisherURLHttps + APIMIntegrationConstants.REST_API_PUBLISHER_CONTEXT_FULL + APIMIntegrationConstants.REST_API_PUBLISHER_EXPORT_API_RESOURCE;
+                publisherURLHttps + APIMIntegrationConstants.REST_API_PUBLISHER_CONTEXT_FULL +
+                        APIMIntegrationConstants.REST_API_PUBLISHER_EXPORT_API_RESOURCE;
         importUrl =
-                publisherURLHttps + APIMIntegrationConstants.REST_API_PUBLISHER_CONTEXT_FULL + APIMIntegrationConstants.REST_API_PUBLISHER_IMPORT_API_RESOURCE;
+                publisherURLHttps + APIMIntegrationConstants.REST_API_PUBLISHER_CONTEXT_FULL +
+                        APIMIntegrationConstants.REST_API_PUBLISHER_IMPORT_API_RESOURCE;
     }
 
     @Test(groups = { "wso2.am" }, description = "Test exporting Soap-To-REST APIs")
     public void testAPIExport() throws Exception {
         //construct export API url
         URL exportRequest = new URL(
-                exportUrl + "?name=" + SOAPTOREST_API_NAME + "&version=" + API_VERSION_1_0_0 + "&providerName=" + user.getUserName() + "&format=JSON");
+                exportUrl + "?name=" + SOAPTOREST_API_NAME + "&version=" + API_VERSION_1_0_0 + "&providerName=" +
+                        user.getUserName() + "&format=JSON");
         zipTempDir = Files.createTempDir();
         //set the export file name with tenant prefix
         String fileName = user.getUserDomain() + "_" + SOAPTOREST_API_NAME;
@@ -200,7 +204,8 @@ public class SOAPAPIImportExportTestCase extends APIManagerLifecycleBaseTest {
                             "PhoneVerification/1.0/admin--PhoneVerification1.0.wsdl";
         } else if (TestUserMode.TENANT_ADMIN.equals(userMode)) {
             expectedRegistryWsdlUri = "/t/wso2.com/registry/resource/_system/governance/apimgt/applicationdata" +
-                    "/provider/" + "admin-AT-wso2.com/PhoneVerification/1.0/admin-AT-wso2.com--PhoneVerification1.0" + ".wsdl";
+                    "/provider/" + "admin-AT-wso2.com/PhoneVerification/1.0/admin-AT-wso2.com--PhoneVerification1.0" +
+                    ".wsdl";
         }
 
         assertEquals(wsdlUrl, expectedRegistryWsdlUri, "WSDL URI set to the imported API is incorrect");
@@ -226,7 +231,8 @@ public class SOAPAPIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private void startWiremockServer() {
         endpointPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
         assertNotEquals(endpointPort, -1,
-                "No available port in the range " + MockServerUtils.httpsPortLowerRange + "-" + MockServerUtils.httpsPortUpperRange + " was found");
+                "No available port in the range " + MockServerUtils.httpsPortLowerRange + "-" +
+                        MockServerUtils.httpsPortUpperRange + " was found");
         wireMockServer = new WireMockServer(options().port(endpointPort));
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/phoneverify/wsdl")).willReturn(
                 aResponse().withStatus(200).withHeader("Content-Type", "text/xml").withBody(wsdlDefinition)));
