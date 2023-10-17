@@ -80,9 +80,9 @@ public class SOAPAPIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private final String SOAPTOREST_API_NAME = "PhoneVerification";
     private final String API_CONTEXT = "phoneverify";
     private final String API_VERSION_1_0_0 = "1.0";
-    private static final String SOAPTOREST_TEST_USER = "soaptorestuser";
-    private static final String SOAPTOREST_TEST_USER_PASSWORD = "soaptorestuser";
-    private static final String SOAPTOREST_ROLE = "soaptorestrole";
+    private static final String SOAPTOREST_TEST_USER = "soaptorestuser1";
+    private static final String SOAPTOREST_TEST_USER_PASSWORD = "soaptorestuser1";
+    private static final String SOAPTOREST_ROLE = "soaptorestrole1";
     private String endpointHost = "http://localhost";
     private int endpointPort;
     private String wsdlDefinition;
@@ -226,6 +226,8 @@ public class SOAPAPIImportExportTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(newSoapToRestAPIId);
+        userManagementClient.deleteRole(SOAPTOREST_ROLE);
+        userManagementClient.deleteUser(SOAPTOREST_TEST_USER);
         boolean deleteStatus;
         deleteStatus = apiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file deletion not successful");
