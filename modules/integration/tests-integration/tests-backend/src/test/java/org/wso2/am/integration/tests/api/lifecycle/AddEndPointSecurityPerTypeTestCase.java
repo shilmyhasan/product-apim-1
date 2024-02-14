@@ -408,8 +408,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertEquals(sandboxEndpointSecurityModel.get("type"), "OAUTH");
         Assert.assertEquals(sandboxEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
         Assert.assertEquals(sandboxEndpointSecurityModel.get("clientId"), applicationKeyBeanSandbox.getConsumerKey());
-        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientSecret"),
-                applicationKeyBeanSandbox.getConsumerSecret());
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientSecret"), "");
         Assert.assertNotNull(endpointSecurityModel.get("production"));
         Map productionEndpointSecurityModel = (Map) endpointSecurityModel.get("production");
         Assert.assertTrue((Boolean) productionEndpointSecurityModel.get("enabled"));
@@ -417,8 +416,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertEquals(productionEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
         Assert.assertEquals(productionEndpointSecurityModel.get("clientId"),
                 applicationKeyBeanProduction.getConsumerKey());
-        Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"),
-                applicationKeyBeanProduction.getConsumerSecret());
+        Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"), "");
 
         String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
         requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
@@ -484,8 +482,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertEquals(sandboxEndpointSecurityModel.get("type"), "OAUTH");
         Assert.assertEquals(sandboxEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
         Assert.assertEquals(sandboxEndpointSecurityModel.get("clientId"), applicationKeyBeanSandbox.getConsumerKey());
-        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientSecret"),
-                applicationKeyBeanSandbox.getConsumerSecret());
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientSecret"), "");
         Assert.assertNotNull(endpointSecurityModel.get("production"));
         Map productionEndpointSecurityModel = (Map) endpointSecurityModel.get("production");
         Assert.assertTrue((Boolean) productionEndpointSecurityModel.get("enabled"));
@@ -493,8 +490,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertEquals(productionEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
         Assert.assertEquals(productionEndpointSecurityModel.get("clientId"),
                 applicationKeyBeanProduction.getConsumerKey());
-        Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"),
-                applicationKeyBeanProduction.getConsumerSecret());
+        Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"), "");
     }
 
     @AfterClass(alwaysRun = true)
