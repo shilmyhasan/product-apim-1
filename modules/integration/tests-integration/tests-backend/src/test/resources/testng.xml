@@ -118,6 +118,7 @@
         <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <!--class name="org.wso2.am.integration.tests.restapi.ThumbnailSearchTestCase"/-->
             <class name="org.wso2.am.integration.tests.other.PublisherAccessControlTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.other.DevPortalVisibilityTestCase"/>-->
@@ -132,7 +133,6 @@
             <class name="org.wso2.am.integration.tests.comments.PublisherCommentTest"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.AllowedScopesTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SecondaryUserStoreCaseInsensitiveTestCase"/>
@@ -416,6 +416,14 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.other.MandatoryPropertiesTestWithRestart"/>
+        </classes>
+    </test>
+
+    <test name="apim-intermittent-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group5"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
         </classes>
     </test>
 </suite>
