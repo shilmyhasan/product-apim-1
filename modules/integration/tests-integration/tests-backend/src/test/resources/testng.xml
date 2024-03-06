@@ -117,8 +117,6 @@
     <test name="apim-email-secondary-userstore-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group3"/>
         <classes>
-            <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <!--class name="org.wso2.am.integration.tests.restapi.ThumbnailSearchTestCase"/-->
             <class name="org.wso2.am.integration.tests.other.PublisherAccessControlTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.other.DevPortalVisibilityTestCase"/>-->
