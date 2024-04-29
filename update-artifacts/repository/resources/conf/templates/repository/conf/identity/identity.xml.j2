@@ -221,6 +221,7 @@
         <UseSPTenantDomain>{{oauth.access_token.generate_with_sp_tenant_domain}}</UseSPTenantDomain>
         {% endif %}
 
+
         <!-- This configuration is used to enable or disable generation of random numbers using HMAC-SHA256 algorithm.-->
         <EnableSHA256Params>{{oauth.enable_sha256}}</EnableSHA256Params>
 
@@ -959,6 +960,15 @@
             </RenewTokenWithoutRevokingExisting>
         </JWT>
         {% endif %}
+
+
+        <!-- Configuration for allowing users to hexify the x5t parameter in JWT token -->
+        {% if oauth.jwt_x5t_hexify_required is defined %}
+        <JWTX5tHexifyingRequired>{{oauth.jwt_x5t_hexify_required}}</JWTX5tHexifyingRequired>
+        {% else %}
+        <JWTX5tHexifyingRequired>true</JWTX5tHexifyingRequired>
+        {% endif %}
+        
     </OAuth>
 
     <RestApiAuthentication>
@@ -1024,6 +1034,7 @@
         <SAMLECPEndpoint>{{saml.endpoints.ecp}}</SAMLECPEndpoint>
         <SAMLMetadataValidityPeriod>{{saml.metadata.validity_period}}</SAMLMetadataValidityPeriod>
         <SAMLMetadataSigningEnabled>{{saml.metadata.enable_signing}}</SAMLMetadataSigningEnabled>
+
         <SAMLIDPMetadataEnableSHA256Alg>{{saml.metadata.idp_enable_sha256}}</SAMLIDPMetadataEnableSHA256Alg>
         <SAMLSPMetadataParsingEnableSHA256Alg>{{saml.metadata.sp_enable_sha256}}</SAMLSPMetadataParsingEnableSHA256Alg>
         <SAML2AuthenticationRequestValidityPeriodEnabled>{{saml.enable_request_validity_period}}</SAML2AuthenticationRequestValidityPeriodEnabled>
@@ -3305,6 +3316,7 @@
         {% endfor %}
     </OrganizationLevelEmailBrandingFallbacks>
 
+
     <!-- Configuration to enable SHA256 in IdentityUtil-->
     <IdentityUtil>
         <EnableSHA256>{{identity_util.enable_sha256}}</EnableSHA256>
@@ -3313,5 +3325,4 @@
     <CertThumbprint>
         <EnableSHA256>{{cert_thumbprint.enable_sha256}}</EnableSHA256>
     </CertThumbprint>
-
 </Server>
