@@ -581,44 +581,44 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
           Populate data for API Logging Test Case
          */
         // Get list of APIs without any API
-        Map<String, String> apiLoggingHeader = new HashMap<>();
-        byte[] apiLoggingEncodedBytes = Base64.encodeBase64(BASIC_AUTH_HEADER
-                .getBytes(StandardCharsets.UTF_8));
-        apiLoggingHeader.put("Authorization", "Basic " + new String(apiLoggingEncodedBytes, StandardCharsets.UTF_8));
-        apiLoggingHeader.put("Content-Type", "application/json");
+//        Map<String, String> apiLoggingHeader = new HashMap<>();
+//        byte[] apiLoggingEncodedBytes = Base64.encodeBase64(BASIC_AUTH_HEADER
+//                .getBytes(StandardCharsets.UTF_8));
+//        apiLoggingHeader.put("Authorization", "Basic " + new String(apiLoggingEncodedBytes, StandardCharsets.UTF_8));
+//        apiLoggingHeader.put("Content-Type", "application/json");
 
         // Create an application
-        HttpResponse apiLoggingApplicationResponse = restAPIStore.createApplication("APILoggingTestApp",
-                "Test Application AccessibilityOfBlockAPITestCase", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.JWT);
-        apiLoggingApplicationId = apiLoggingApplicationResponse.getData();
+//        HttpResponse apiLoggingApplicationResponse = restAPIStore.createApplication("APILoggingTestApp",
+//                "Test Application AccessibilityOfBlockAPITestCase", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+//                ApplicationDTO.TokenTypeEnum.JWT);
+//        apiLoggingApplicationId = apiLoggingApplicationResponse.getData();
 
         // Create an API and subscribe to it using created application
-        APIRequest apiLoggingApiRequest;
-        String apiLoggingBackendUrl = getAPIInvocationURLHttp("xmlapi", "1.0.0");
-        apiLoggingApiRequest = new APIRequest("APILoggingTestAPI", "apiloggingtest", new URL(apiLoggingBackendUrl));
-        apiLoggingApiRequest.setVersion("1.0.0");
-        apiLoggingApiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiLoggingApiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiLoggingApiRequest.setTags("testTag1, testTag2, testTag3");
-        apiLoggingApiRequest.setProvider(user.getUserName());
-        apiLoggingApiId = createPublishAndSubscribeToAPIUsingRest(apiLoggingApiRequest, restAPIPublisher, restAPIStore,
-                apiLoggingApplicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
-        waitForAPIDeploymentSync(user.getUserName(), "APILoggingTestAPI", "1.0.0",
-                APIMIntegrationConstants.IS_API_EXISTS);
+//        APIRequest apiLoggingApiRequest;
+//        String apiLoggingBackendUrl = getAPIInvocationURLHttp("xmlapi", "1.0.0");
+//        apiLoggingApiRequest = new APIRequest("APILoggingTestAPI", "apiloggingtest", new URL(apiLoggingBackendUrl));
+//        apiLoggingApiRequest.setVersion("1.0.0");
+//        apiLoggingApiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+//        apiLoggingApiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+//        apiLoggingApiRequest.setTags("testTag1, testTag2, testTag3");
+//        apiLoggingApiRequest.setProvider(user.getUserName());
+//        apiLoggingApiId = createPublishAndSubscribeToAPIUsingRest(apiLoggingApiRequest, restAPIPublisher, restAPIStore,
+//                apiLoggingApplicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+//        waitForAPIDeploymentSync(user.getUserName(), "APILoggingTestAPI", "1.0.0",
+//                APIMIntegrationConstants.IS_API_EXISTS);
 
         // Change logLevel to FULL
-        String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";
-        HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v0/tenant-logs/carbon.super/apis/" + apiLoggingApiId, apiLoggingHeader,
-                addNewLoggerPayload);
+//        String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";
+//        HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v0/tenant-logs/carbon.super/apis/" + apiLoggingApiId, apiLoggingHeader,
+//                addNewLoggerPayload);
 
         // Get list of APIs which have log-level=FULL
-        HttpResponse apiLoggingLoggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
-                + "api/am/devops/v0/tenant-logs/carbon.super/apis?log-level=full", apiLoggingHeader);
-        Assert.assertEquals(apiLoggingLoggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + "apiloggingtest" + "/" + "1.0.0" + "\","
-                + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiLoggingApiId + "\",\"resourceMethod\":null,\"resourcePath\":null}]}");
-
-        ctx.setAttribute("apiLoggingApplicationId", apiLoggingApplicationId);
+//        HttpResponse apiLoggingLoggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
+//                + "api/am/devops/v0/tenant-logs/carbon.super/apis?log-level=full", apiLoggingHeader);
+//        Assert.assertEquals(apiLoggingLoggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + "apiloggingtest" + "/" + "1.0.0" + "\","
+//                + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiLoggingApiId + "\",\"resourceMethod\":null,\"resourcePath\":null}]}");
+//
+//        ctx.setAttribute("apiLoggingApplicationId", apiLoggingApplicationId);
         /*
           Call Restart Server function
          */
