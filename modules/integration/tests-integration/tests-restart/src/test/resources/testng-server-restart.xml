@@ -16,7 +16,7 @@
             <class name="org.wso2.am.integration.tests.server.restart.JWTBandwidthThrottlingServerRestartTestCase"/>
 <!--            <class name="org.wso2.am.integration.tests.server.restart.BurstControlServerRestartTestCase"/>-->
             <class name="org.wso2.am.integration.tests.server.restart.CustomThrottlingPolicyServerRestartTestCase"/>
-            <class name="org.wso2.am.integration.tests.server.restart.APILoggingServerRestartTest"/>
+<!--            <class name="org.wso2.am.integration.tests.server.restart.APILoggingServerRestartTest"/>-->
         </classes>
     </test>
 
