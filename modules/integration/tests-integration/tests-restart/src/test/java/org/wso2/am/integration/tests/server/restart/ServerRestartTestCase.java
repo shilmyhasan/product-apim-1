@@ -708,8 +708,8 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(graphQLAPIId, restAPIPublisher);
         restAPIPublisher.deleteAPI(graphQLAPIId);
 
-        restAPIStore.deleteApplication(apiLoggingApplicationId);
-        restAPIPublisher.deleteAPI(apiLoggingApiId);
+//        restAPIStore.deleteApplication(apiLoggingApplicationId);
+//        restAPIPublisher.deleteAPI(apiLoggingApiId);
 
         super.cleanUp();
     }
