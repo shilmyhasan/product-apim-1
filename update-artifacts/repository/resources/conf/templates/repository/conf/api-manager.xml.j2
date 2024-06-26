@@ -420,6 +420,11 @@
         {% endif %}
     </TokenRevocationNotifiers>
 
+    <TokenValidation>
+        <!-- Enforce validating JWT type header -->
+        <EnforceTypeHeaderValidation>{{apim.token.validation.enforce_type_header_validation}}</EnforceTypeHeaderValidation>
+    </TokenValidation>
+
     <!-- Settings related to managing API access tiers. -->
     <TierManagement>
         <!-- Enable the providers to expose their APIs over the special 'Unlimited' tier which
@@ -1111,6 +1116,16 @@
         <LogTracer>
             <Enabled>{{apim.open_tracer.log_tracer.enable}}</Enabled>
         </LogTracer>
+        {% if apim.open_tracer.custom_tag is defined %}
+        <CustomTags>
+           {% for tag in apim.open_tracer.custom_tag %}
+           <CustomTag>
+               <Name>{{tag.name}}</Name>
+               <Value>{{tag.value}}</Value>
+           </CustomTag>
+           {% endfor %}
+        </CustomTags>
+        {% endif %}
     </OpenTracer>
 
     {% if security_audit is defined %}
@@ -1256,6 +1271,9 @@
         <EnableClientCertificateValidation>{{apimgt.mutual_ssl.enable_client_validation}}</EnableClientCertificateValidation>
         {% if apimgt.mutual_ssl.client_certificate_encode is defined %}
         <ClientCertificateEncode>{{apimgt.mutual_ssl.client_certificate_encode}}</ClientCertificateEncode>
+        {% endif %}
+        {% if apimgt.mutual_ssl.enable_certificate_chain_validation is defined %}
+        <EnableCertificateChainValidation>{{apimgt.mutual_ssl.enable_certificate_chain_validation}}</EnableCertificateChainValidation>
         {% endif %}
      </MutualSSL>
 
