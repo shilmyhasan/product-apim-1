@@ -2191,5 +2191,6 @@
   "multi_tenancy.stratos.manager_service.admin_username": "admin",
   "multi_tenancy.stratos.manager_service.admin_password": "admin",
   "multi_tenancy.stratos.google_analytics_url": "http://google-analytics.js",
-  "multi_tenancy.stratos.sso_loading_message": "Loading..."
+  "multi_tenancy.stratos.sso_loading_message": "Loading...",
+  "common_auth_caller_path.enable_common_auth_caller_path_validation": false
 }
