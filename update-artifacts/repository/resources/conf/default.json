@@ -377,6 +377,34 @@
       "http_method": "POST",
       "permissions": "/permission/admin/manage/identity/applicationmgt/create",
       "scopes": "internal_application_mgt_create"
+    },
+    {
+      "context": "(.*)/keymanager-operations/dcr/register(.*)",
+      "secure": true,
+      "http_method": "GET",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/view",
+      "scopes": "internal_application_mgt_view"
+    },
+    {
+      "context": "(.*)/keymanager-operations/dcr/register(.*)",
+      "secure": true,
+      "http_method": "PUT",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/update",
+      "scopes": "internal_application_mgt_update"
+    },
+    {
+      "context": "(.*)/keymanager-operations/dcr/register(.*)",
+      "secure": true,
+      "http_method": "POST",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/update",
+      "scopes": "internal_application_mgt_update"
+    },
+    {
+      "context": "(.*)/keymanager-operations/dcr/register(.*)",
+      "secure": true,
+      "http_method": "DELETE",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/delete",
+      "scopes": "internal_application_mgt_delete"
     }
   ],
   "qpid.nio": false,
