@@ -84,7 +84,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     private static final String RESTRICTED_SUBSCRIBER = "restricted_user";
     private static final String STANDARD_SUBSCRIBER = "standard_user";
     private static final String PASSWORD = "$3213#@sd";
-    private static final String POLICY_TYPE_API = "api";
+    private static final String POLICY_TYPE_COMMON = "common";
     private static final String RESTRICTED_ROLE = "restricted_role";
     private static final String SCOPE = "restricted_scope";
     private ApiTestHelper apiTestHelper;
@@ -471,8 +471,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         List<APIDTO> apisToBeUsed = new ArrayList<>();
         APIDTO api = apiTestHelper.createAnApi(getBackendEndServiceEndPointHttp("wildcard/resources"));
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(getPolicyList("jsonToXML", POLICY_TYPE_API, null));
-        apiOperationPoliciesDTO.setFault(getPolicyList("jsonFault", POLICY_TYPE_API, null));
+        apiOperationPoliciesDTO.setRequest(getPolicyList("jsonToXML", POLICY_TYPE_COMMON, null));
+        apiOperationPoliciesDTO.setFault(getPolicyList("jsonFault", POLICY_TYPE_COMMON, null));
         for (APIOperationsDTO operationsDTO : api.getOperations()) {
             operationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
         }
@@ -540,7 +540,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 expectedResponse, headers);
         // Step 9 : Change In mediation Sequence in base API and verify change reflect in APIProduct.
         Assert.assertNotNull(api);
-        apiOperationPoliciesDTO.setRequest(getPolicyList("xmlToJson", POLICY_TYPE_API, null));
+        apiOperationPoliciesDTO.setRequest(getPolicyList("xmlToJson", POLICY_TYPE_COMMON, null));
         for (APIOperationsDTO operationsDTO : api.getOperations()) {
             operationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
         }
@@ -564,8 +564,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         List<APIDTO> apisToBeUsed = new ArrayList<>();
         APIDTO api = apiTestHelper.createAnApi(getBackendEndServiceEndPointHttp("wildcard/resources"));
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setResponse(getPolicyList("xmlToJson", POLICY_TYPE_API, null));
-        apiOperationPoliciesDTO.setFault(getPolicyList("jsonFault", POLICY_TYPE_API, null));
+        apiOperationPoliciesDTO.setResponse(getPolicyList("xmlToJson", POLICY_TYPE_COMMON, null));
+        apiOperationPoliciesDTO.setFault(getPolicyList("jsonFault", POLICY_TYPE_COMMON, null));
         for (APIOperationsDTO operationsDTO : api.getOperations()) {
             operationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
         }
@@ -635,7 +635,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 jsonResponseBody, headers);
         // Step 9 : Change In mediation Sequence in base API and verify change reflect in APIProduct.
         Assert.assertNotNull(api);
-        apiOperationPoliciesDTO.setRequest(getPolicyList("jsonToXML", POLICY_TYPE_API, null));
+        apiOperationPoliciesDTO.setRequest(getPolicyList("jsonToXML", POLICY_TYPE_COMMON, null));
         for (APIOperationsDTO operationsDTO : api.getOperations()) {
             operationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
         }
