@@ -87,6 +87,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
     private final String API_NAME = "AddNewPolicyAndInvokeAPITest";
     private final String API_CONTEXT = "AddNewPolicyAndInvokeAPI";
     private final String API_END_POINT_POSTFIX_URL = "xmlapi";
+    private final String POLICY_TYPE_COMMON = "common";
 
     private final String TEST_POLICY_NAME = "customCommonLogPolicy";
 
@@ -470,8 +471,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         attributeMap.put("headerValue", "TestValue");
 
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, attributeMap));
-        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, policyMap, attributeMap));
+        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, attributeMap));
+        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, attributeMap));
 
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
         restAPIPublisher.updateAPI(apidto);
@@ -508,8 +509,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
 
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, null));
-        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, policyMap, null));
+        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, null));
+        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, null));
 
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
 
@@ -528,8 +529,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
 
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, null));
-        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, policyMap, null));
+        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, null));
+        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, null));
 
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
 
@@ -557,6 +558,10 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
                 apidto.getOperations().get(0).getOperationPolicies().getRequest().get(0).getPolicyId();
 
         assertNotEquals(newVersionClonedPolicyId, policyMap.get("addHeader"));
+        String newVersionClonedPolicyType =
+                apidto.getOperations().get(0).getOperationPolicies().getRequest().get(0).getPolicyType();
+
+        assertNotEquals(newVersionClonedPolicyId, policyMap.get("api"));
         OperationPolicyDataDTO clonedPolicy =
                 restAPIPublisher.getAPISpecificOperationPolicy(newVersionClonedPolicyId, newVersionAPIId);
         assertNotNull(clonedPolicy);
@@ -593,12 +598,12 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
 
         for (int i = 0; i < 3; i++) {
             Assert.assertNotNull(policyMap.get(policyList[i]), "Unable to find a common policy with name " + policyList[i]);
-            requestPolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
-            responsePolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
+            requestPolicyList.add(getPolicyList(policyList[i], POLICY_TYPE_COMMON, policyMap, null).get(0));
+            responsePolicyList.add(getPolicyList(policyList[i], POLICY_TYPE_COMMON, policyMap, null).get(0));
         }
 
-        requestPolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
-        responsePolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
+        requestPolicyList.add(getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, attributeMap).get(0));
+        responsePolicyList.add(getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, attributeMap).get(0));
         apiOperationPoliciesDTO.setRequest(requestPolicyList);
         apiOperationPoliciesDTO.setResponse(responsePolicyList);
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
@@ -702,12 +707,13 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         return deletePolicyResponse.getResponseCode();
     }
 
-    public List<OperationPolicyDTO> getPolicyList(String policyName, Map<String, String> policyMap,
+    public List<OperationPolicyDTO> getPolicyList(String policyName, String policyType, Map<String, String> policyMap,
                                                   Map<String, Object> attributeMap) {
 
         List<OperationPolicyDTO> policyList = new ArrayList<>();
         OperationPolicyDTO policyDTO = new OperationPolicyDTO();
         policyDTO.setPolicyName(policyName);
+        policyDTO.setPolicyType(policyType);
         policyDTO.setPolicyId(policyMap.get(policyName));
         policyDTO.setParameters(attributeMap);
         policyList.add(policyDTO);
