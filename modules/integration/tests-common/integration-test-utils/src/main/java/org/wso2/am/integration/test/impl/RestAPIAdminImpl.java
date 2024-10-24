@@ -671,6 +671,7 @@ public class RestAPIAdminImpl {
      * @param limit           Maximum number of applications to return.
      * @param offset          Starting point within the complete list of applications qualified.
      * @param appTenantDomain Tenant domain of the applications to get.
+     * @param name            Name of the application to get.
      * @return API response returned by API call.
      * @throws ApiException if an error occurs while retrieving applications.
      */

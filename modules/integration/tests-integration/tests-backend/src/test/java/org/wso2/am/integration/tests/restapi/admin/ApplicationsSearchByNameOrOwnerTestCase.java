@@ -183,7 +183,7 @@ public class ApplicationsSearchByNameOrOwnerTestCase extends APIMIntegrationBase
         if (applicationList != null && !applicationList.isEmpty()) {
 
             ApiResponse<ApplicationListDTO> getApplicationsResponse = restAPIAdminAdminUserClient.getApplications(
-                    searchQuery, null, null, null, searchQuery);
+                    null, null, null, null, searchQuery);
 
             ApplicationListDTO applicationList = getApplicationsResponse.getData();
             List<ApplicationInfoDTO> applicationInfoList = applicationList.getList();
@@ -201,7 +201,7 @@ public class ApplicationsSearchByNameOrOwnerTestCase extends APIMIntegrationBase
         if (applicationList != null && !applicationList.isEmpty()) {
 
             ApiResponse<ApplicationListDTO> getApplicationsResponse = restAPIAdminAdminUserClient.getApplications(
-                    searchQuery, null, null, null, searchQuery);
+                    searchQuery, null, null, null, null);
 
             ApplicationListDTO applicationList = getApplicationsResponse.getData();
             List<ApplicationInfoDTO> applicationInfoList = applicationList.getList();
