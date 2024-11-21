@@ -1069,6 +1069,22 @@ public class RestAPIPublisherImpl {
      * This method is used to upload endpoint certificates
      * Get APIs for the given limit and offset values
      *
+     * @param query The query on which the APIs needs to be filtered
+     * @return APIs for the given query
+     */
+    public APIListDTO getAPIs(String query) throws ApiException {
+
+        setActivityID();
+        ApiResponse<APIListDTO> apiResponse = apIsApi.getAllAPIsWithHttpInfo(null, null, this.tenantDomain, null,
+                null, query, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
+    }
+
+    /**
+     * This method is used to upload endpoint certificates
+     * Get APIs for the given limit and offset values
+     *
      * @param offset starting position
      * @param limit  maximum number of APIs to return
      * @return APIs for the given limit and offset values
