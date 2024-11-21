@@ -681,6 +681,21 @@ public class RestAPIStoreImpl {
         return searchResponse.getData();
     }
 
+        /**
+     * This method is used to upload endpoint certificates
+     * Get APIs for the given limit and offset values
+     *
+     * @param query The query on which the APIs needs to be filtered
+     * @return APIs for the given query
+     */
+    public APIListDTO getAPIs(String query) throws ApiException {
+
+        setActivityID();
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, this.tenantDomain, query, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
+    }
+
     /**
      * Get APIs for the given limit and offset values
      *
