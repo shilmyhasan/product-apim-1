@@ -96,6 +96,8 @@
         {% endif %}
         <GatewayJWTGeneration>
             <ImplClass>{{apim.jwt.gateway_generator.impl}}</ImplClass>
+            <EncodeX5tWithoutPadding>{{apim.jwt.encode_x5t_without_padding}}</EncodeX5tWithoutPadding>
+            <EnableBase64Padding>{{apim.jwt.enable_base64_padding}}</EnableBase64Padding>
             <Configuration>
             <ExcludedClaims>
                 {%- for claim in apim.jwt.gateway_generator.excluded_claims -%}
@@ -1506,6 +1508,7 @@
         <Username>{{apim.proxy_config.username}}</Username>
         <Password>{{apim.proxy_config.password}}</Password>
         <NonProxyHosts>{{apim.proxy_config.nonProxyHosts}}</NonProxyHosts>
+        <TargetProxyHosts>{{apim.proxy_config.targetProxyHosts}}</TargetProxyHosts>
         <Protocol>{{apim.proxy_config.protocol}}</Protocol>
     </ProxyConfig>
      <!--This parameter is used to Enable the password changing feature in devportal. When this is enabled, a user can

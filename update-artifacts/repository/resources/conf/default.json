@@ -685,6 +685,8 @@
   "apim.jwt.signing_algorithm": "SHA256withRSA",
   "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever",
   "apim.jwt.gateway_generator.impl": "org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayJWTGeneratorImpl",
+  "apim.jwt.encode_x5t_without_padding": false,
+  "apim.jwt.enable_base64_padding": true,
   "apim.jwt.enable_tenant_based_signing": false,
   "apim.jwt.gateway_generator.enable_claim_retrieval": false,
   "apim.jwt.binding_federated_user_claims": false,
@@ -2221,5 +2223,6 @@
   "multi_tenancy.stratos.manager_service.admin_password": "admin",
   "multi_tenancy.stratos.google_analytics_url": "http://google-analytics.js",
   "multi_tenancy.stratos.sso_loading_message": "Loading...",
-  "common_auth_caller_path.enable_common_auth_caller_path_validation": false
+  "common_auth_caller_path.enable_common_auth_caller_path_validation": false,
+  "request_parameters.allow_sensitive_data_in_url": true
 }
