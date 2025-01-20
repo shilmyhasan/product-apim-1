@@ -46,7 +46,6 @@
         <module>modules/p2-profile</module>
         <module>modules/oauth2-grant-types</module>
         <module>modules/authenticators</module>
-        <module>modules/callhome</module>
         <module>modules/distribution</module>
         <module>modules/integration</module>
     </modules>
@@ -1451,9 +1450,6 @@
         <identity.outbound.auth.oidc.version>5.6.16</identity.outbound.auth.oidc.version>
         <swagger-parser-version>2.0.14</swagger-parser-version>
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
-
-        <!-- CallHome version -->
-        <callhome.version>4.5.x_1.0.8</callhome.version>
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
