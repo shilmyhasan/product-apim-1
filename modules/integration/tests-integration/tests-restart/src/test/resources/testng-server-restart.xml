@@ -8,6 +8,7 @@
             <class name="org.wso2.am.integration.tests.server.restart.ServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.APIThrottlingServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.ApplicationThrottlingPolicyServerRestartTestCase"/>
+            <class name="org.wso2.am.integration.tests.server.restart.CustomThrottlingPolicyServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.DefaultVersionAPIServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.JWTRevocationServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.APIRevisionServerRestartTestCase"/>
@@ -15,7 +16,6 @@
             <class name="org.wso2.am.integration.tests.server.restart.JWTBandwidthThrottlingServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.BurstControlServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.GraphqlServerRestartTestCase"/>
-            <class name="org.wso2.am.integration.tests.server.restart.CustomThrottlingPolicyServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.APILoggingServerRestartTest"/>
         </classes>
     </test>
