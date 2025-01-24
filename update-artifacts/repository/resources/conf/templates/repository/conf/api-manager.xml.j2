@@ -1563,4 +1563,6 @@
       {% if apim.policy is defined %}
         <EnableAPIPolicies>{{apim.policy.enable_api_level_policies}}</EnableAPIPolicies>
       {% endif %}
+
+      <EnableCertificateManagementEventListening>{{apim.certificate_manager.events_enabled}}</EnableCertificateManagementEventListening>
 </APIManager>

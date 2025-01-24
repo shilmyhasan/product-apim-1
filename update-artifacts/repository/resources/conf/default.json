@@ -2224,5 +2224,6 @@
   "multi_tenancy.stratos.google_analytics_url": "http://google-analytics.js",
   "multi_tenancy.stratos.sso_loading_message": "Loading...",
   "common_auth_caller_path.enable_common_auth_caller_path_validation": false,
-  "request_parameters.allow_sensitive_data_in_url": true
+  "request_parameters.allow_sensitive_data_in_url": true,
+  "apim.certificate_manager.events_enabled": true
 }
