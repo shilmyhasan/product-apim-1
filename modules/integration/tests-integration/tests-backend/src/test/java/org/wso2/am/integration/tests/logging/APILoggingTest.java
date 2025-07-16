@@ -116,8 +116,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
         assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION + "\","
-                + "\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\",\"resourceMethod\":null,\"resourcePath\":null"
-                + "}]}");
+                + "\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\"}]}");
 
         // Change logLevel to FULL
         String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";
@@ -127,9 +126,8 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         // Get list of APIs which have log-level=FULL
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis?log-level=full", header);
-        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION +
-                "\",\"logLevel\":\"FULL\",\"apiId\":\"" + apiId + "\",\"resourceMethod\":null,\"resourcePath\":null" +
-                "}]}");
+        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION + "\","
+                + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiId + "\"}]}");
 
         // Invoke the API
         ArrayList<String> grantTypes = new ArrayList<>();
